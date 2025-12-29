@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: nestjs_postgres_db
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nestjs_app
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - nestjs_network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin (Database Management UI) - Optional
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: nestjs_pgadmin
+    restart: unless-stopped
+    ports:
+      - '5050:80'
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - nestjs_network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  nestjs_network:
+    driver: bridge
+
+# Usage:
+#
+# Start database:
+#   docker-compose up -d postgres
+#
+# Start database with pgAdmin:
+#   docker-compose up -d
+#
+# Stop all services:
+#   docker-compose down
+#
+# Remove all data (DESTRUCTIVE):
+#   docker-compose down -v
+#
+# View logs:
+#   docker-compose logs -f postgres
+#
+# Access pgAdmin:
+#   Open browser: http://localhost:5050
+#   Login: admin@admin.com / admin
+#   Add server:
+#     - Name: Local NestJS
+#     - Host: postgres
+#     - Port: 5432
+#     - Username: postgres
+#     - Password: postgres
