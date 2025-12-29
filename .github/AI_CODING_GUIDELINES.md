@@ -132,12 +132,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { ModuleNameService } from './module-name.service';
 import { CreateModuleNameDto } from './dto/create-module-name.dto';
 import { UpdateModuleNameDto } from './dto/update-module-name.dto';
@@ -177,7 +172,10 @@ export class ModuleNameController {
   @ApiParam({ name: 'id', description: 'Item UUID' })
   @ApiResponse({ status: 200, description: 'Item successfully updated' })
   @ApiResponse({ status: 404, description: 'Item not found' })
-  async update(@Param('id') id: string, @Body() updateDto: UpdateModuleNameDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateModuleNameDto,
+  ) {
     return await this.moduleNameService.update(id, updateDto);
   }
 
@@ -228,7 +226,10 @@ export class ModuleNameService {
     return entity;
   }
 
-  async update(id: string, updateDto: UpdateModuleNameDto): Promise<ModuleName> {
+  async update(
+    id: string,
+    updateDto: UpdateModuleNameDto,
+  ): Promise<ModuleName> {
     await this.findOne(id); // Ensures entity exists
     await this.repository.update(id, updateDto);
     return this.findOne(id);
@@ -244,39 +245,46 @@ export class ModuleNameService {
 ## Important Rules
 
 ### 1. Imports and Dependencies
+
 - Use `@nestjs/swagger` for `PartialType`, not `@nestjs/mapped-types`
 - Always import required validation decorators from `class-validator`
 - Import `ApiProperty` from `@nestjs/swagger` for all DTO properties
 
 ### 2. Swagger Documentation
+
 - Every controller must have `@ApiTags()` decorator
 - Every endpoint must have `@ApiOperation()`, `@ApiResponse()` decorators
 - Every DTO property must have `@ApiProperty()` with description and example
 - Use `@ApiParam()` for path parameters
 
 ### 3. Validation
+
 - Always use validation decorators on DTOs
 - Use `@IsNotEmpty()`, `@IsString()`, `@IsEmail()`, etc. as appropriate
 - Include `@MinLength()`, `@MaxLength()` when relevant
 
 ### 4. Database
+
 - Use UUID primary keys: `@PrimaryGeneratedColumn('uuid')`
 - Always include `createdAt` and `updatedAt` timestamp columns
 - Use descriptive table names in `@Entity('table_name')`
 - Use appropriate column types and constraints
 
 ### 5. Error Handling
+
 - Use appropriate NestJS exceptions (`NotFoundException`, `BadRequestException`, etc.)
 - Always validate entity existence before update/delete operations
 - Provide meaningful error messages
 
 ### 6. Naming Conventions
+
 - Use PascalCase for classes
 - Use camelCase for methods and properties
 - Use kebab-case for URLs and file names
 - Use snake_case for database table names
 
 ### 7. Module Registration
+
 - Always register new modules in `app.module.ts`
 - Export services if they need to be used by other modules
 - Import `TypeOrmModule.forFeature([Entity])` for database entities
@@ -308,12 +316,14 @@ npm run migration:revert
 ## Environment Configuration
 
 The project uses environment variables from `.env` file:
+
 - `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`
 - `NODE_ENV`, `PORT`
 
 ## Testing Endpoints
 
 After implementation, test endpoints at:
+
 - API: `http://localhost:3000/api/v1`
 - Swagger docs: `http://localhost:3000/api/docs`
 
