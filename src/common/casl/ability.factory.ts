@@ -23,7 +23,13 @@ export enum Action {
 
 // Define the subjects (resources) that actions can be performed on
 export type Subjects =
-  | InferSubjects<typeof User | typeof Role | typeof Permission | typeof File | typeof SampleProduct>
+  | InferSubjects<
+      | typeof User
+      | typeof Role
+      | typeof Permission
+      | typeof File
+      | typeof SampleProduct
+    >
   | 'all';
 
 // Define the Ability type

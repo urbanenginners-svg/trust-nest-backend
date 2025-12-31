@@ -18,7 +18,10 @@ import { AuthGuard } from '../../common/guards/auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { CheckPermissions } from '../../common/decorators/check-permissions.decorator';
 import { Action } from '../../common/casl/ability.factory';
-import { SerializeResponse, SerializationGroups } from '../../common/decorators/serialize-response.decorator';
+import {
+  SerializeResponse,
+  SerializationGroups,
+} from '../../common/decorators/serialize-response.decorator';
 import { SampleProduct } from './sample-product.entity';
 
 /**

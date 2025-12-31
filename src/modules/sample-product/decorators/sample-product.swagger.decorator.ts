@@ -24,7 +24,8 @@ export const SampleProductSwagger = {
     applyDecorators(
       ApiOperation({
         summary: 'Create a new sample product',
-        description: 'Creates a new sample product like "Protein Supplements", "Pulses & Lentils", etc.',
+        description:
+          'Creates a new sample product like "Protein Supplements", "Pulses & Lentils", etc.',
       }),
       ApiBody({ type: CreateSampleProductDto }),
       ApiResponse({

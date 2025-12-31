@@ -21,35 +21,35 @@ export class SampleProduct {
   id: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Name of the sample product',
-    example: 'Protein Supplements' 
+    example: 'Protein Supplements',
   })
   @Expose({ groups: [SerializationGroups.ADMIN, SerializationGroups.USER] })
   name: string;
 
   @Column({ type: 'text', nullable: true })
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Detailed description of the sample product',
     example: 'Nutritional supplements for muscle building and recovery',
-    required: false 
+    required: false,
   })
   @Expose({ groups: [SerializationGroups.ADMIN, SerializationGroups.USER] })
   description?: string;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Sample product code for internal reference',
     example: 'PROT_SUPP',
-    required: false 
+    required: false,
   })
   @Expose({ groups: [SerializationGroups.ADMIN, SerializationGroups.USER] })
   code?: string;
 
   @Column({ type: 'boolean', default: true })
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Whether the sample product is active',
-    default: true 
+    default: true,
   })
   @Expose({ groups: [SerializationGroups.ADMIN] })
   isActive: boolean;
