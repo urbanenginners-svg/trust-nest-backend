@@ -353,33 +353,133 @@ export class ModuleNameController {
 - Reusable decorator components
 - Consistent response schemas and error handling
 
-### 3. Validation
+### 3. Response Formatting (REQUIRED)
+
+#### Entity-Based Response Schemas
+
+**DO NOT** write explicit response schemas in Swagger decorators. Use entity types for automatic schema generation:
+
+```typescript
+// ❌ BAD - Explicit schema
+ApiOkResponse({
+  description: 'User created successfully',
+  schema: {
+    example: {
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      name: 'John Doe',
+      email: 'john@example.com',
+    },
+  },
+});
+
+// ✅ GOOD - Entity-based schema
+ApiOkResponse({
+  description: 'User created successfully',
+  type: User,
+});
+```
+
+#### Role-Based Field Visibility (REQUIRED)
+
+Use class-transformer decorators on entities to control field visibility:
+
+**Entity Setup:**
+
+```typescript
+// user.entity.ts
+import { Exclude, Expose, Transform } from 'class-transformer';
+
+export enum UserGroups {
+  PUBLIC = 'public', // Basic info for public display
+  PROFILE = 'profile', // User's own profile view
+  ADMIN = 'admin', // Admin view with sensitive data
+  LIST = 'list', // List view for collections
+}
+
+@Entity('users')
+export class User {
+  @Expose({ groups: [UserGroups.PUBLIC, UserGroups.PROFILE, UserGroups.ADMIN] })
+  id: string;
+
+  @Expose({ groups: [UserGroups.PUBLIC, UserGroups.PROFILE, UserGroups.ADMIN] })
+  name: string;
+
+  @Expose({ groups: [UserGroups.PROFILE, UserGroups.ADMIN] })
+  email: string;
+
+  @Exclude() // Never expose password
+  password: string;
+
+  @Expose({ groups: [UserGroups.ADMIN] })
+  isActive: boolean;
+}
+```
+
+**Controller Usage:**
+
+```typescript
+// user.controller.ts
+import { SerializeResponse } from '../../common/decorators/serialize-response.decorator';
+import { UserGroups } from './user.entity';
+
+@Controller('users')
+export class UserController {
+  @Get()
+  @SerializeResponse(UserGroups.LIST, UserGroups.PUBLIC) // Multiple groups for different roles
+  async findAll() {
+    return await this.userService.findAll();
+  }
+
+  @Get(':id')
+  @SerializeResponse(UserGroups.PROFILE, UserGroups.ADMIN)
+  async findOne(@Param('id') id: string) {
+    return await this.userService.findOne(id);
+  }
+}
+```
+
+**Field Visibility Rules:**
+
+- `PUBLIC`: Basic info visible to everyone
+- `PROFILE`: User's own data view
+- `ADMIN`: Administrative view with sensitive fields
+- `LIST`: Optimized view for collections
+- `@Exclude()`: Never expose sensitive fields like passwords
+
+**Response Transformation:**
+The system automatically determines user permissions and filters response fields accordingly:
+
+- **Public users**: Only see `PUBLIC` group fields
+- **Authenticated users**: See `PUBLIC` + `PROFILE` group fields
+- **Admin users**: See all groups including `ADMIN` fields
+
+### 4. Validation
 
 - Always use validation decorators on DTOs
 - Use `@IsNotEmpty()`, `@IsString()`, `@IsEmail()`, etc. as appropriate
 - Include `@MinLength()`, `@MaxLength()` when relevant
 
-### 4. Database
+### 5. Database
 
 - Use UUID primary keys: `@PrimaryGeneratedColumn('uuid')`
 - Always include `createdAt` and `updatedAt` timestamp columns
 - Use descriptive table names in `@Entity('table_name')`
 - Use appropriate column types and constraints
 
-### 5. Error Handling
+### 6. Error Handling
 
 - Use appropriate NestJS exceptions (`NotFoundException`, `BadRequestException`, etc.)
 - Always validate entity existence before update/delete operations
 - Provide meaningful error messages
 
-### 6. Naming Conventions
+### 7. Naming Conventions
 
 - Use PascalCase for classes
 - Use camelCase for methods and properties
 - Use kebab-case for URLs and file names
 - Use snake_case for database table names
 
-### 7. Module Registration
+### 8. Module Registration
 
 - Always register new modules in `app.module.ts`
 - Export services if they need to be used by other modules

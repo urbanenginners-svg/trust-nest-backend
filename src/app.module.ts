@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { validate } from './config/env.validation';
@@ -13,6 +14,7 @@ import { SeedService } from './database/seed.service';
 import { User } from './modules/user/user.entity';
 import { Role } from './modules/role/role.entity';
 import { Permission } from './modules/permission/permission.entity';
+import { SerializationInterceptor } from './common/interceptors/serialization.interceptor';
 
 /**
  * Root Application Module
@@ -45,6 +47,13 @@ import { Permission } from './modules/permission/permission.entity';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, SeedService],
+  providers: [
+    AppService,
+    SeedService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SerializationInterceptor,
+    },
+  ],
 })
 export class AppModule {}

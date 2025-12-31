@@ -24,6 +24,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { CheckPermissions } from '../../common/decorators/check-permissions.decorator';
+import { SerializeResponse, SerializationGroups } from '../../common/decorators/serialize-response.decorator';
 import { Action } from '../../common/casl/ability.factory';
 import { User } from './user.entity';
 
@@ -46,6 +47,7 @@ export class UserController {
   @HttpCode(HttpStatus.CREATED)
   @CheckPermissions({ action: Action.CREATE, subject: User })
   @CreateUserSwagger()
+  @SerializeResponse('admin')
   async create(@Body() createUserDto: CreateUserDto) {
     return await this.userService.create(createUserDto);
   }
@@ -57,6 +59,7 @@ export class UserController {
   @Get()
   @CheckPermissions({ action: Action.READ, subject: User })
   @FindAllUsersSwagger()
+  @SerializeResponse('admin', 'user')
   async findAll() {
     return await this.userService.findAll();
   }
@@ -68,6 +71,7 @@ export class UserController {
   @Get(':id')
   @CheckPermissions({ action: Action.READ, subject: User })
   @FindOneUserSwagger()
+  @SerializeResponse('admin', 'user')
   async findOne(@Param('id') id: string) {
     return await this.userService.findOne(id);
   }
@@ -79,6 +83,7 @@ export class UserController {
   @Patch(':id')
   @CheckPermissions({ action: Action.UPDATE, subject: User })
   @UpdateUserSwagger()
+  @SerializeResponse('admin')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return await this.userService.update(id, updateUserDto);
   }

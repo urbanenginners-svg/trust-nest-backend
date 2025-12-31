@@ -18,6 +18,7 @@ import { AssignPermissionsDto } from './dto/assign-permissions.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { CheckPermissions } from '../../common/decorators/check-permissions.decorator';
+import { SerializeResponse, SerializationGroups } from '../../common/decorators/serialize-response.decorator';
 import { Action } from '../../common/casl/ability.factory';
 import { Role } from './role.entity';
 import {
@@ -51,6 +52,7 @@ export class RoleController {
   @HttpCode(HttpStatus.CREATED)
   @CheckPermissions({ action: Action.CREATE, subject: Role })
   @CreateRoleSwagger()
+  @SerializeResponse(SerializationGroups.ADMIN)
   async create(@Body() createRoleDto: CreateRoleDto) {
     return await this.roleService.create(createRoleDto);
   }
@@ -63,6 +65,7 @@ export class RoleController {
   @Get()
   @CheckPermissions({ action: Action.READ, subject: Role })
   @FindAllRolesSwagger()
+  @SerializeResponse(SerializationGroups.ADMIN, SerializationGroups.USER)
   async findAll() {
     return await this.roleService.findAll();
   }
@@ -75,6 +78,7 @@ export class RoleController {
   @Get(':id')
   @CheckPermissions({ action: Action.READ, subject: Role })
   @FindOneRoleSwagger()
+  @SerializeResponse(SerializationGroups.ADMIN, SerializationGroups.USER)
   async findOne(@Param('id') id: string) {
     return await this.roleService.findOne(id);
   }
@@ -87,6 +91,7 @@ export class RoleController {
   @Patch(':id')
   @CheckPermissions({ action: Action.UPDATE, subject: Role })
   @UpdateRoleSwagger()
+  @SerializeResponse(SerializationGroups.ADMIN)
   async update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
     return await this.roleService.update(id, updateRoleDto);
   }
@@ -112,6 +117,7 @@ export class RoleController {
   @Post(':id/permissions')
   @CheckPermissions({ action: Action.UPDATE, subject: Role })
   @AssignPermissionsSwagger()
+  @SerializeResponse(SerializationGroups.ADMIN)
   async assignPermissions(
     @Param('id') id: string,
     @Body() assignPermissionsDto: AssignPermissionsDto,
@@ -127,6 +133,7 @@ export class RoleController {
   @Delete(':id/permissions')
   @CheckPermissions({ action: Action.UPDATE, subject: Role })
   @RemovePermissionsSwagger()
+  @SerializeResponse(SerializationGroups.ADMIN)
   async removePermissions(
     @Param('id') id: string,
     @Body() assignPermissionsDto: AssignPermissionsDto,

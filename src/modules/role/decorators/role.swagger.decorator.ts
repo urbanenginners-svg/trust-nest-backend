@@ -10,6 +10,7 @@ import {
   ApiConflictResponse,
   ApiOkResponse,
 } from '@nestjs/swagger';
+import { Role } from '../role.entity';
 
 /**
  * Swagger decorator for creating a role
@@ -18,18 +19,10 @@ import {
 export function CreateRoleSwagger() {
   return applyDecorators(
     ApiOperation({ summary: 'Create a new role' }),
-    ApiResponse({
+    ApiOkResponse({
       status: 201,
       description: 'Role created successfully',
-      schema: {
-        example: {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          name: 'editor',
-          description: 'Can edit content',
-          createdAt: '2024-01-01T00:00:00.000Z',
-          updatedAt: '2024-01-01T00:00:00.000Z',
-        },
-      },
+      type: Role,
     }),
     ApiBadRequestResponse({
       description: 'Bad request - validation failed',
@@ -66,25 +59,7 @@ export function FindAllRolesSwagger() {
     }),
     ApiOkResponse({
       description: 'List of roles retrieved successfully',
-      schema: {
-        example: {
-          data: [
-            {
-              id: '123e4567-e89b-12d3-a456-426614174000',
-              name: 'superadmin',
-              description: 'Super administrator with all permissions',
-              createdAt: '2024-01-01T00:00:00.000Z',
-              updatedAt: '2024-01-01T00:00:00.000Z',
-            },
-          ],
-          meta: {
-            total: 1,
-            page: 1,
-            limit: 10,
-            totalPages: 1,
-          },
-        },
-      },
+      type: [Role],
     }),
     ApiForbiddenResponse({
       description: 'Forbidden - insufficient permissions',
@@ -106,16 +81,7 @@ export function FindOneRoleSwagger() {
     }),
     ApiOkResponse({
       description: 'Role retrieved successfully',
-      schema: {
-        example: {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          name: 'editor',
-          description: 'Can edit content',
-          permissions: [],
-          createdAt: '2024-01-01T00:00:00.000Z',
-          updatedAt: '2024-01-01T00:00:00.000Z',
-        },
-      },
+      type: Role,
     }),
     ApiForbiddenResponse({
       description: 'Forbidden - insufficient permissions',
@@ -140,15 +106,7 @@ export function UpdateRoleSwagger() {
     }),
     ApiOkResponse({
       description: 'Role updated successfully',
-      schema: {
-        example: {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          name: 'updated-editor',
-          description: 'Updated description',
-          createdAt: '2024-01-01T00:00:00.000Z',
-          updatedAt: '2024-01-01T00:00:00.000Z',
-        },
-      },
+      type: Role,
     }),
     ApiBadRequestResponse({
       description: 'Bad request - validation failed',
@@ -175,6 +133,7 @@ export function RemoveRoleSwagger() {
       example: '123e4567-e89b-12d3-a456-426614174000',
     }),
     ApiOkResponse({
+      status: 204,
       description: 'Role deleted successfully',
     }),
     ApiForbiddenResponse({
