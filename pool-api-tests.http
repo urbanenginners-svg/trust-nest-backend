@@ -1,0 +1,74 @@
+### Pool API Test Cases
+### Base URL: http://localhost:3000/api/v1
+
+### 1. Login as super admin to get token
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "superadmin@example.com",
+  "password": "SuperAdmin@123"
+}
+
+### 2. Get all sample products (to get a category ID for pool creation)
+GET {{host}}/sample-products
+Authorization: Bearer {{token}}
+
+### 3. Create a new pool
+POST {{host}}/pools
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Premium Whey Protein Pool",
+  "categoryId": "{{sample_product_id}}",
+  "sampleSource": "Lab Testing Facility A",
+  "batchNumber": "BATCH-001-2024",
+  "description": "High-quality protein sample for laboratory analysis",
+  "poolPrice": 99.99
+}
+
+### 4. Get all pools
+GET {{host}}/pools
+Authorization: Bearer {{token}}
+
+### 5. Get my pools (pools created by current user)
+GET {{host}}/pools/my-pools
+Authorization: Bearer {{token}}
+
+### 6. Get a specific pool by ID
+GET {{host}}/pools/{{pool_id}}
+Authorization: Bearer {{token}}
+
+### 7. Update a pool
+PUT {{host}}/pools/{{pool_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Updated Premium Whey Protein Pool",
+  "description": "Updated high-quality protein sample for laboratory analysis",
+  "poolPrice": 129.99
+}
+
+### 8. Approve a pool (admin only)
+PUT {{host}}/pools/{{pool_id}}/approve
+Authorization: Bearer {{token}}
+
+### 9. Get all pools including unapproved (to see the approved status)
+GET {{host}}/pools?includeUnapproved=true
+Authorization: Bearer {{token}}
+
+### 10. Soft delete a pool
+DELETE {{host}}/pools/{{pool_id}}
+Authorization: Bearer {{token}}
+
+### 11. Restore a deleted pool (admin only)
+PUT {{host}}/pools/{{pool_id}}/restore
+Authorization: Bearer {{token}}
+
+### Variables (replace these with actual values from responses)
+@host = http://localhost:3000/api/v1
+@token = your_jwt_token_here
+@sample_product_id = your_sample_product_id_here
+@pool_id = your_pool_id_here

@@ -18,6 +18,8 @@ import { Role } from './modules/role/role.entity';
 import { Permission } from './modules/permission/permission.entity';
 import { File } from './modules/file/file.entity';
 import { SampleProduct } from './modules/sample-product/sample-product.entity';
+import { Pool } from './modules/pool/pool.entity';
+import { PoolModule } from './modules/pool/pool.module';
 import { SerializationInterceptor } from './common/interceptors/serialization.interceptor';
 
 /**
@@ -42,7 +44,14 @@ import { SerializationInterceptor } from './common/interceptors/serialization.in
     }),
 
     // TypeORM entities for SeedService
-    TypeOrmModule.forFeature([User, Role, Permission, File, SampleProduct]),
+    TypeOrmModule.forFeature([
+      User,
+      Role,
+      Permission,
+      File,
+      SampleProduct,
+      Pool,
+    ]),
 
     // Feature Modules
     UserModule,
@@ -50,6 +59,7 @@ import { SerializationInterceptor } from './common/interceptors/serialization.in
     PermissionModule,
     FileModule,
     SampleProductModule,
+    PoolModule,
     AuthModule,
   ],
   controllers: [AppController],

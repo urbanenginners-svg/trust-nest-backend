@@ -5,6 +5,7 @@ import { User } from '../modules/user/user.entity';
 import { Role } from '../modules/role/role.entity';
 import { Permission } from '../modules/permission/permission.entity';
 import { File } from '../modules/file/file.entity';
+import { Pool } from '../modules/pool/pool.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -20,6 +21,8 @@ export class SeedService implements OnApplicationBootstrap {
     private permissionRepository: Repository<Permission>,
     @InjectRepository(File)
     private fileRepository: Repository<File>,
+    @InjectRepository(Pool)
+    private poolRepository: Repository<Pool>,
   ) {}
 
   async onApplicationBootstrap() {
@@ -211,6 +214,39 @@ export class SeedService implements OnApplicationBootstrap {
         action: 'manage',
         description: 'Full sample product management',
       },
+
+      // Pool permissions
+      {
+        name: 'pools.create',
+        resource: 'pool',
+        action: 'create',
+        description: 'Create new pools',
+      },
+      {
+        name: 'pools.read',
+        resource: 'pool',
+        action: 'read',
+        description: 'View pool information',
+      },
+      {
+        name: 'pools.update',
+        resource: 'pool',
+        action: 'update',
+        description: 'Update pool information',
+      },
+      {
+        name: 'pools.delete',
+        resource: 'pool',
+        action: 'delete',
+        description: 'Delete pools',
+      },
+      {
+        name: 'pools.manage',
+        resource: 'pool',
+        action: 'manage',
+        description:
+          'Full pool management including approval and hard deletion',
+      },
     ];
 
     for (const permissionData of permissions) {
@@ -293,7 +329,7 @@ export class SeedService implements OnApplicationBootstrap {
       this.logger.log('Assigned all permissions to superadmin role');
     }
 
-    // Admin gets user management and file management permissions
+    // Admin gets user management, file management, sample products, and pools permissions
     if (adminRole && adminRole.permissions.length === 0) {
       const adminPermissions = allPermissions.filter(
         (p) => p.name.startsWith('users.') && !p.name.includes('manage'),
@@ -306,32 +342,46 @@ export class SeedService implements OnApplicationBootstrap {
           (p) => p.name.startsWith('files.') && !p.name.includes('manage'),
         ),
       );
+      adminPermissions.push(
+        ...allPermissions.filter((p) => p.name.startsWith('sample-products.')),
+      );
+      adminPermissions.push(
+        ...allPermissions.filter((p) => p.name.startsWith('pools.')),
+      );
 
       adminRole.permissions = adminPermissions;
       await this.roleRepository.save(adminRole);
       this.logger.log(
-        'Assigned user and file management permissions to admin role',
+        'Assigned user, file, sample product, and pool management permissions to admin role',
       );
     }
 
-    // Basic user gets read permissions and basic file operations
+    // Basic user gets read permissions, basic file operations, and pool management
     if (userRole && userRole.permissions.length === 0) {
       const userPermissions = allPermissions.filter(
         (p) =>
           p.action === 'read' &&
           (p.resource === 'user' ||
             p.resource === 'role' ||
-            p.resource === 'file'),
+            p.resource === 'file' ||
+            p.resource === 'sample-product' ||
+            p.resource === 'pool'),
       );
       // Add file create permission for basic users
       userPermissions.push(
         ...allPermissions.filter((p) => p.name === 'files.create'),
       );
+      // Add pool management permissions for basic users (they can manage their own pools)
+      userPermissions.push(
+        ...allPermissions.filter(
+          (p) => p.name.startsWith('pools.') && !p.name.includes('manage'),
+        ),
+      );
 
       userRole.permissions = userPermissions;
       await this.roleRepository.save(userRole);
       this.logger.log(
-        'Assigned basic read and file upload permissions to user role',
+        'Assigned basic read, file upload, and pool management permissions to user role',
       );
     }
   }
