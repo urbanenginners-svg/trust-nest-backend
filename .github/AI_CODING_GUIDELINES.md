@@ -35,6 +35,8 @@ src/
         ├── [module-name].controller.ts
         ├── [module-name].service.ts
         ├── [module-name].entity.ts
+        ├── decorators/    # Swagger decorators (REQUIRED)
+        │   └── [module-name].swagger.decorator.ts
         └── dto/
             ├── create-[module-name].dto.ts
             └── update-[module-name].dto.ts
@@ -252,10 +254,104 @@ export class ModuleNameService {
 
 ### 2. Swagger Documentation
 
+#### Standard Rules
+
 - Every controller must have `@ApiTags()` decorator
-- Every endpoint must have `@ApiOperation()`, `@ApiResponse()` decorators
 - Every DTO property must have `@ApiProperty()` with description and example
-- Use `@ApiParam()` for path parameters
+
+#### Decorator Pattern (REQUIRED)
+
+**DO NOT** write inline Swagger decorators in controllers. Instead, create dedicated decorator files:
+
+**Structure:**
+
+```
+src/modules/[module-name]/
+├── decorators/
+│   └── [module-name].swagger.decorator.ts
+```
+
+**Implementation Pattern:**
+
+```typescript
+// decorators/module-name.swagger.decorator.ts
+import { applyDecorators } from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
+
+export function CreateModuleNameSwagger() {
+  return applyDecorators(
+    ApiOperation({ summary: 'Create a new item' }),
+    ApiOkResponse({
+      status: 201,
+      description: 'Item created successfully',
+      schema: {
+        example: {
+          id: '123e4567-e89b-12d3-a456-426614174000',
+          name: 'Example Item',
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
+        },
+      },
+    }),
+    ApiBadRequestResponse({ description: 'Bad request - validation failed' }),
+    ApiForbiddenResponse({
+      description: 'Forbidden - insufficient permissions',
+    }),
+  );
+}
+
+export function FindAllModuleNameSwagger() {
+  return applyDecorators(
+    ApiOperation({ summary: 'Get all items' }),
+    ApiOkResponse({ description: 'List of all items' }),
+    ApiForbiddenResponse({
+      description: 'Forbidden - insufficient permissions',
+    }),
+  );
+}
+
+// ... other CRUD operations
+```
+
+**Controller Usage:**
+
+```typescript
+// module-name.controller.ts
+import {
+  CreateModuleNameSwagger,
+  FindAllModuleNameSwagger,
+} from './decorators/module-name.swagger.decorator';
+
+@Controller('module-name')
+export class ModuleNameController {
+  @Post()
+  @CreateModuleNameSwagger() // Single line decorator
+  async create(@Body() createDto: CreateModuleNameDto) {
+    return await this.moduleNameService.create(createDto);
+  }
+
+  @Get()
+  @FindAllModuleNameSwagger() // Single line decorator
+  async findAll() {
+    return await this.moduleNameService.findAll();
+  }
+}
+```
+
+**Benefits:**
+
+- Clean, maintainable controllers with single-line decorators
+- Centralized API documentation configuration
+- Reusable decorator components
+- Consistent response schemas and error handling
 
 ### 3. Validation
 
@@ -311,6 +407,7 @@ npm run migration:revert
 - Services: `module-name.service.ts`
 - Entities: `module-name.entity.ts`
 - DTOs: `create-module-name.dto.ts`, `update-module-name.dto.ts`
+- Swagger Decorators: `module-name.swagger.decorator.ts` (in `decorators/` folder)
 - Migrations: `YYYYMMDDHHMMSS-description.ts`
 
 ## Environment Configuration
@@ -333,9 +430,11 @@ After implementation, test endpoints at:
 2. Implement proper error handling
 3. Use TypeScript types consistently
 4. Follow the existing project structure
-5. Add comprehensive Swagger documentation
-6. Include validation on all input DTOs
-7. Use repository pattern for database operations
-8. Export services when they need to be shared
+5. **MANDATORY**: Create Swagger decorators in separate files - never inline in controllers
+6. Add comprehensive API documentation through dedicated decorator files
+7. Include validation on all input DTOs
+8. Use repository pattern for database operations
+9. Export services when they need to be shared
+10. Create single-line decorators for cleaner controller code
 
 When generating new code, ensure it follows these patterns and integrates seamlessly with the existing codebase.

@@ -10,13 +10,7 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { RoleService } from './role.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -26,6 +20,15 @@ import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { CheckPermissions } from '../../common/decorators/check-permissions.decorator';
 import { Action } from '../../common/casl/ability.factory';
 import { Role } from './role.entity';
+import {
+  CreateRoleSwagger,
+  FindAllRolesSwagger,
+  FindOneRoleSwagger,
+  UpdateRoleSwagger,
+  RemoveRoleSwagger,
+  AssignPermissionsSwagger,
+  RemovePermissionsSwagger,
+} from './decorators/role.swagger.decorator';
 
 /**
  * Role Controller
@@ -47,17 +50,7 @@ export class RoleController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @CheckPermissions({ action: Action.CREATE, subject: Role })
-  @ApiOperation({ summary: 'Create a new role' })
-  @ApiResponse({ status: 201, description: 'Role successfully created' })
-  @ApiResponse({ status: 400, description: 'Bad request - validation failed' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - insufficient permissions',
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict - role name already exists',
-  })
+  @CreateRoleSwagger()
   async create(@Body() createRoleDto: CreateRoleDto) {
     return await this.roleService.create(createRoleDto);
   }
@@ -69,15 +62,7 @@ export class RoleController {
    */
   @Get()
   @CheckPermissions({ action: Action.READ, subject: Role })
-  @ApiOperation({ summary: 'Get all roles' })
-  @ApiResponse({
-    status: 200,
-    description: 'List of all roles with permissions',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - insufficient permissions',
-  })
+  @FindAllRolesSwagger()
   async findAll() {
     return await this.roleService.findAll();
   }
@@ -89,21 +74,7 @@ export class RoleController {
    */
   @Get(':id')
   @CheckPermissions({ action: Action.READ, subject: Role })
-  @ApiOperation({ summary: 'Get a role by ID' })
-  @ApiParam({
-    name: 'id',
-    description: 'Role UUID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Role found with permissions and users',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - insufficient permissions',
-  })
-  @ApiResponse({ status: 404, description: 'Role not found' })
+  @FindOneRoleSwagger()
   async findOne(@Param('id') id: string) {
     return await this.roleService.findOne(id);
   }
@@ -115,23 +86,7 @@ export class RoleController {
    */
   @Patch(':id')
   @CheckPermissions({ action: Action.UPDATE, subject: Role })
-  @ApiOperation({ summary: 'Update a role by ID' })
-  @ApiParam({
-    name: 'id',
-    description: 'Role UUID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @ApiResponse({ status: 200, description: 'Role successfully updated' })
-  @ApiResponse({ status: 400, description: 'Bad request - validation failed' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - insufficient permissions',
-  })
-  @ApiResponse({ status: 404, description: 'Role not found' })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict - role name already exists',
-  })
+  @UpdateRoleSwagger()
   async update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
     return await this.roleService.update(id, updateRoleDto);
   }
@@ -144,22 +99,7 @@ export class RoleController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CheckPermissions({ action: Action.DELETE, subject: Role })
-  @ApiOperation({ summary: 'Delete a role by ID' })
-  @ApiParam({
-    name: 'id',
-    description: 'Role UUID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @ApiResponse({ status: 204, description: 'Role successfully deleted' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - insufficient permissions',
-  })
-  @ApiResponse({ status: 404, description: 'Role not found' })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict - cannot delete superadmin role',
-  })
+  @RemoveRoleSwagger()
   async remove(@Param('id') id: string) {
     await this.roleService.remove(id);
   }
@@ -171,22 +111,7 @@ export class RoleController {
    */
   @Post(':id/permissions')
   @CheckPermissions({ action: Action.UPDATE, subject: Role })
-  @ApiOperation({ summary: 'Assign permissions to a role' })
-  @ApiParam({
-    name: 'id',
-    description: 'Role UUID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Permissions successfully assigned to role',
-  })
-  @ApiResponse({ status: 400, description: 'Bad request - validation failed' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - insufficient permissions',
-  })
-  @ApiResponse({ status: 404, description: 'Role or permissions not found' })
+  @AssignPermissionsSwagger()
   async assignPermissions(
     @Param('id') id: string,
     @Body() assignPermissionsDto: AssignPermissionsDto,
@@ -201,21 +126,7 @@ export class RoleController {
    */
   @Delete(':id/permissions')
   @CheckPermissions({ action: Action.UPDATE, subject: Role })
-  @ApiOperation({ summary: 'Remove permissions from a role' })
-  @ApiParam({
-    name: 'id',
-    description: 'Role UUID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Permissions successfully removed from role',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - insufficient permissions',
-  })
-  @ApiResponse({ status: 404, description: 'Role not found' })
+  @RemovePermissionsSwagger()
   async removePermissions(
     @Param('id') id: string,
     @Body() assignPermissionsDto: AssignPermissionsDto,

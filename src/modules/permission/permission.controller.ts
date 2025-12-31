@@ -11,14 +11,14 @@ import {
   UseGuards,
   Query,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+  CreatePermissionSwagger,
+  FindAllPermissionsSwagger,
+  FindOnePermissionSwagger,
+  UpdatePermissionSwagger,
+  RemovePermissionSwagger,
+} from './decorators/permission.swagger.decorator';
 import { PermissionService } from './permission.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
@@ -48,17 +48,7 @@ export class PermissionController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @CheckPermissions({ action: Action.CREATE, subject: Permission })
-  @ApiOperation({ summary: 'Create a new permission' })
-  @ApiResponse({ status: 201, description: 'Permission successfully created' })
-  @ApiResponse({ status: 400, description: 'Bad request - validation failed' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - insufficient permissions',
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict - permission name already exists',
-  })
+  @CreatePermissionSwagger()
   async create(@Body() createPermissionDto: CreatePermissionDto) {
     return await this.permissionService.create(createPermissionDto);
   }
@@ -70,17 +60,7 @@ export class PermissionController {
    */
   @Get()
   @CheckPermissions({ action: Action.READ, subject: Permission })
-  @ApiOperation({ summary: 'Get all permissions' })
-  @ApiQuery({
-    name: 'resource',
-    required: false,
-    description: 'Filter by resource',
-  })
-  @ApiResponse({ status: 200, description: 'List of all permissions' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - insufficient permissions',
-  })
+  @FindAllPermissionsSwagger()
   async findAll(@Query('resource') resource?: string) {
     if (resource) {
       return await this.permissionService.findByResource(resource);
@@ -95,21 +75,7 @@ export class PermissionController {
    */
   @Get(':id')
   @CheckPermissions({ action: Action.READ, subject: Permission })
-  @ApiOperation({ summary: 'Get a permission by ID' })
-  @ApiParam({
-    name: 'id',
-    description: 'Permission UUID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Permission found with associated roles',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - insufficient permissions',
-  })
-  @ApiResponse({ status: 404, description: 'Permission not found' })
+  @FindOnePermissionSwagger()
   async findOne(@Param('id') id: string) {
     return await this.permissionService.findOne(id);
   }
@@ -121,23 +87,7 @@ export class PermissionController {
    */
   @Patch(':id')
   @CheckPermissions({ action: Action.UPDATE, subject: Permission })
-  @ApiOperation({ summary: 'Update a permission by ID' })
-  @ApiParam({
-    name: 'id',
-    description: 'Permission UUID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @ApiResponse({ status: 200, description: 'Permission successfully updated' })
-  @ApiResponse({ status: 400, description: 'Bad request - validation failed' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - insufficient permissions',
-  })
-  @ApiResponse({ status: 404, description: 'Permission not found' })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict - permission name already exists',
-  })
+  @UpdatePermissionSwagger()
   async update(
     @Param('id') id: string,
     @Body() updatePermissionDto: UpdatePermissionDto,
@@ -153,18 +103,7 @@ export class PermissionController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @CheckPermissions({ action: Action.DELETE, subject: Permission })
-  @ApiOperation({ summary: 'Delete a permission by ID' })
-  @ApiParam({
-    name: 'id',
-    description: 'Permission UUID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @ApiResponse({ status: 204, description: 'Permission successfully deleted' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - insufficient permissions',
-  })
-  @ApiResponse({ status: 404, description: 'Permission not found' })
+  @RemovePermissionSwagger()
   async remove(@Param('id') id: string) {
     await this.permissionService.remove(id);
   }

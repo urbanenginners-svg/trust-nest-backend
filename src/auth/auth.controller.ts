@@ -6,12 +6,12 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+  LoginSwagger,
+  GetProfileSwagger,
+  GetSuperAdminSwagger,
+} from './decorators/auth.swagger.decorator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthService } from './auth.service';
@@ -37,21 +37,7 @@ export class AuthController {
    * POST /auth/login
    */
   @Post('login')
-  @ApiOperation({ summary: 'User login' })
-  @ApiResponse({
-    status: 200,
-    description: 'Login successful',
-    schema: {
-      type: 'object',
-      properties: {
-        access_token: { type: 'string' },
-        token_type: { type: 'string', example: 'Bearer' },
-        expires_in: { type: 'number', example: 3600 },
-        user: { type: 'object' },
-      },
-    },
-  })
-  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  @LoginSwagger()
   async login(@Body() loginDto: LoginDto) {
     return await this.authService.login(loginDto);
   }
@@ -63,15 +49,7 @@ export class AuthController {
   @Get('profile')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('defaultBearerAuth')
-  @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({
-    status: 200,
-    description: 'User profile retrieved successfully',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - invalid or missing token',
-  })
+  @GetProfileSwagger()
   async getProfile(@Request() req) {
     // User is already attached to request by JWT strategy
     const { password, ...userProfile } = req.user;
@@ -83,8 +61,7 @@ export class AuthController {
    * GET /auth/superadmin
    */
   @Get('superadmin')
-  @ApiOperation({ summary: 'Get superadmin credentials for testing' })
-  @ApiResponse({ status: 200, description: 'Superadmin credentials' })
+  @GetSuperAdminSwagger()
   async getSuperAdmin() {
     const superAdmin = await this.userRepository.findOne({
       where: { email: 'superadmin@example.com' },
