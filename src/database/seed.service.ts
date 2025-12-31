@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from '../modules/user/user.entity';
 import { Role } from '../modules/role/role.entity';
 import { Permission } from '../modules/permission/permission.entity';
+import { File } from '../modules/file/file.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -17,6 +18,8 @@ export class SeedService implements OnApplicationBootstrap {
     private roleRepository: Repository<Role>,
     @InjectRepository(Permission)
     private permissionRepository: Repository<Permission>,
+    @InjectRepository(File)
+    private fileRepository: Repository<File>,
   ) {}
 
   async onApplicationBootstrap() {
@@ -144,6 +147,38 @@ export class SeedService implements OnApplicationBootstrap {
         action: 'manage',
         description: 'Full permission management',
       },
+
+      // File permissions
+      {
+        name: 'files.create',
+        resource: 'file',
+        action: 'create',
+        description: 'Upload and create new files',
+      },
+      {
+        name: 'files.read',
+        resource: 'file',
+        action: 'read',
+        description: 'View and download files',
+      },
+      {
+        name: 'files.update',
+        resource: 'file',
+        action: 'update',
+        description: 'Update file metadata',
+      },
+      {
+        name: 'files.delete',
+        resource: 'file',
+        action: 'delete',
+        description: 'Delete files',
+      },
+      {
+        name: 'files.manage',
+        resource: 'file',
+        action: 'manage',
+        description: 'Full file management including hard deletion',
+      },
     ];
 
     for (const permissionData of permissions) {
@@ -226,7 +261,7 @@ export class SeedService implements OnApplicationBootstrap {
       this.logger.log('Assigned all permissions to superadmin role');
     }
 
-    // Admin gets user management permissions
+    // Admin gets user management and file management permissions
     if (adminRole && adminRole.permissions.length === 0) {
       const adminPermissions = allPermissions.filter(
         (p) => p.name.startsWith('users.') && !p.name.includes('manage'),
@@ -234,23 +269,38 @@ export class SeedService implements OnApplicationBootstrap {
       adminPermissions.push(
         ...allPermissions.filter((p) => p.name.includes('roles.read')),
       );
+      adminPermissions.push(
+        ...allPermissions.filter(
+          (p) => p.name.startsWith('files.') && !p.name.includes('manage'),
+        ),
+      );
 
       adminRole.permissions = adminPermissions;
       await this.roleRepository.save(adminRole);
-      this.logger.log('Assigned user management permissions to admin role');
+      this.logger.log(
+        'Assigned user and file management permissions to admin role',
+      );
     }
 
-    // Basic user gets only read permissions for their own data
+    // Basic user gets read permissions and basic file operations
     if (userRole && userRole.permissions.length === 0) {
       const userPermissions = allPermissions.filter(
         (p) =>
           p.action === 'read' &&
-          (p.resource === 'user' || p.resource === 'role'),
+          (p.resource === 'user' ||
+            p.resource === 'role' ||
+            p.resource === 'file'),
+      );
+      // Add file create permission for basic users
+      userPermissions.push(
+        ...allPermissions.filter((p) => p.name === 'files.create'),
       );
 
       userRole.permissions = userPermissions;
       await this.roleRepository.save(userRole);
-      this.logger.log('Assigned basic read permissions to user role');
+      this.logger.log(
+        'Assigned basic read and file upload permissions to user role',
+      );
     }
   }
 

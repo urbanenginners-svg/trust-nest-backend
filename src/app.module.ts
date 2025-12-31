@@ -9,11 +9,13 @@ import { getDatabaseConfig } from './config/database.config';
 import { UserModule } from './modules/user/user.module';
 import { RoleModule } from './modules/role/role.module';
 import { PermissionModule } from './modules/permission/permission.module';
+import { FileModule } from './modules/file/file.module';
 import { AuthModule } from './auth/auth.module';
 import { SeedService } from './database/seed.service';
 import { User } from './modules/user/user.entity';
 import { Role } from './modules/role/role.entity';
 import { Permission } from './modules/permission/permission.entity';
+import { File } from './modules/file/file.entity';
 import { SerializationInterceptor } from './common/interceptors/serialization.interceptor';
 
 /**
@@ -38,12 +40,13 @@ import { SerializationInterceptor } from './common/interceptors/serialization.in
     }),
 
     // TypeORM entities for SeedService
-    TypeOrmModule.forFeature([User, Role, Permission]),
+    TypeOrmModule.forFeature([User, Role, Permission, File]),
 
     // Feature Modules
     UserModule,
     RoleModule,
     PermissionModule,
+    FileModule,
     AuthModule,
   ],
   controllers: [AppController],

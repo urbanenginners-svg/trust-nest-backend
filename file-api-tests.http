@@ -1,0 +1,106 @@
+### File Upload API Tests
+### Base URL
+@baseUrl = http://localhost:3000
+
+### Variables
+@userEmail = superadmin@example.com
+@userPassword = SuperAdmin123!
+
+### Available moduleName enum values:
+### - "user" (for user-related files)
+### - "role" (for role-related files)  
+### - "permission" (for permission-related files)
+### - "file" (for file-related files)
+### - "general" (default, for miscellaneous files)
+
+### 1. Login to get JWT token
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}"
+}
+
+### Store the token from the response
+@token = {{login_response.response.body.$.access_token}}
+
+### 2. Upload a file with enum moduleName
+POST {{baseUrl}}/files/upload?moduleName=user
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="test-document.pdf"
+Content-Type: application/pdf
+
+%% Replace this with actual file content or test with a tool like Postman/Insomnia %%
+------WebKitFormBoundary--
+
+### 3. Get all files
+GET {{baseUrl}}/files
+Authorization: Bearer {{token}}
+
+### 4. Get files by module (using enum)
+GET {{baseUrl}}/files?moduleName=user
+Authorization: Bearer {{token}}
+
+### 4.1 Get files by role module  
+GET {{baseUrl}}/files?moduleName=role
+Authorization: Bearer {{token}}
+
+### 4.2 Get files by permission module
+GET {{baseUrl}}/files?moduleName=permission
+Authorization: Bearer {{token}}
+
+### 4.3 Get files by file module
+GET {{baseUrl}}/files?moduleName=file
+Authorization: Bearer {{token}}
+
+### 4.4 Get files by general module
+GET {{baseUrl}}/files?moduleName=general
+Authorization: Bearer {{token}}
+
+### 5. Get my uploaded files
+GET {{baseUrl}}/files/my-files
+Authorization: Bearer {{token}}
+
+### 6. Get specific file details
+GET {{baseUrl}}/files/{{file_id}}
+Authorization: Bearer {{token}}
+
+### 7. Download a file
+GET {{baseUrl}}/files/{{file_id}}/download
+Authorization: Bearer {{token}}
+
+### 8. Update file metadata (using enum values)
+PATCH {{baseUrl}}/files/{{file_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fileName": "updated-document-name.pdf",
+  "moduleName": "role"
+}
+
+### 9. Create file metadata (using enum values)
+POST {{baseUrl}}/files
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fileName": "external-file.jpg",
+  "fileType": "image/jpeg",
+  "fileSize": 2048576,
+  "uploaderId": "{{uploader_id}}",
+  "filePath": "uploads/general/external-file.jpg",
+  "moduleName": "general"
+}
+
+### 10. Soft delete file
+DELETE {{baseUrl}}/files/{{file_id}}
+Authorization: Bearer {{token}}
+
+### 11. Hard delete file (removes from disk)
+DELETE {{baseUrl}}/files/{{file_id}}/hard
+Authorization: Bearer {{token}}
