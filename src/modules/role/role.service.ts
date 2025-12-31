@@ -36,17 +36,19 @@ export class RoleService {
     return await this.roleRepository.save(role);
   }
 
-  async findAll(): Promise<Role[]> {
+  async findAll(includeDeleted: boolean = false): Promise<Role[]> {
     return await this.roleRepository.find({
       relations: ['permissions'],
       order: { createdAt: 'DESC' },
+      withDeleted: includeDeleted,
     });
   }
 
-  async findOne(id: string): Promise<Role> {
+  async findOne(id: string, includeDeleted: boolean = false): Promise<Role> {
     const role = await this.roleRepository.findOne({
       where: { id },
       relations: ['permissions', 'users'],
+      withDeleted: includeDeleted,
     });
 
     if (!role) {
@@ -84,7 +86,12 @@ export class RoleService {
       throw new ConflictException('Cannot delete superadmin role');
     }
 
-    await this.roleRepository.delete(id);
+    await this.roleRepository.softDelete(id);
+  }
+
+  async restore(id: string): Promise<void> {
+    const role = await this.findOne(id, true); // Ensures role exists (including deleted)
+    await this.roleRepository.restore(id);
   }
 
   async assignPermissions(

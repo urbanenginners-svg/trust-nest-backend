@@ -60,6 +60,13 @@ export const SampleProductSwagger = {
         description: 'Whether to include inactive sample products',
         example: false,
       }),
+      ApiQuery({
+        name: 'includeDeleted',
+        required: false,
+        type: Boolean,
+        description: 'Whether to include soft-deleted sample products',
+        example: false,
+      }),
       ApiResponse({
         status: 200,
         description: 'Sample products retrieved successfully',
@@ -138,7 +145,7 @@ export const SampleProductSwagger = {
     applyDecorators(
       ApiOperation({
         summary: 'Soft delete a sample product',
-        description: 'Deactivates a sample product (sets isActive to false)',
+        description: 'Soft deletes a sample product (sets deletedAt timestamp)',
       }),
       ApiParam({
         name: 'id',
@@ -148,7 +155,7 @@ export const SampleProductSwagger = {
       }),
       ApiResponse({
         status: 200,
-        description: 'Sample product deactivated successfully',
+        description: 'Sample product soft deleted successfully',
       }),
       ApiResponse({
         status: 404,
@@ -158,13 +165,13 @@ export const SampleProductSwagger = {
     ),
 
   /**
-   * Swagger decorators for hard deleting a sample product
+   * Swagger decorators for restoring a soft-deleted sample product
    */
-  HardDelete: () =>
+  Restore: () =>
     applyDecorators(
       ApiOperation({
-        summary: 'Permanently delete a sample product',
-        description: 'Permanently removes a sample product from the database',
+        summary: 'Restore a soft-deleted sample product',
+        description: 'Restores a previously soft-deleted sample product',
       }),
       ApiParam({
         name: 'id',
@@ -174,11 +181,11 @@ export const SampleProductSwagger = {
       }),
       ApiResponse({
         status: 200,
-        description: 'Sample product deleted permanently',
+        description: 'Sample product restored successfully',
       }),
       ApiResponse({
         status: 404,
-        description: 'Sample product not found',
+        description: 'Sample product not found or not deleted',
       }),
       ApiBearerAuth(),
     ),

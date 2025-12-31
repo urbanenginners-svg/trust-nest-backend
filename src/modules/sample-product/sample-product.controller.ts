@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -52,9 +53,13 @@ export class SampleProductController {
   @SampleProductSwagger.FindAll()
   @CheckPermissions({ action: Action.READ, subject: SampleProduct })
   @SerializeResponse(SerializationGroups.USER)
-  async findAll(@Query('includeInactive') includeInactive?: string) {
+  async findAll(
+    @Query('includeInactive') includeInactive?: string,
+    @Query('includeDeleted') includeDeleted?: string,
+  ) {
     const includeInactiveFlag = includeInactive === 'true';
-    return await this.sampleProductService.findAll(includeInactiveFlag);
+    const includeDeletedFlag = includeDeleted === 'true';
+    return await this.sampleProductService.findAll(includeInactiveFlag, includeDeletedFlag);
   }
 
   /**
@@ -83,24 +88,24 @@ export class SampleProductController {
   }
 
   /**
-   * Soft delete a sample product (deactivate)
+   * Soft delete a sample product
    */
   @Delete(':id')
   @SampleProductSwagger.Remove()
   @CheckPermissions({ action: Action.DELETE, subject: SampleProduct })
   async remove(@Param('id') id: string) {
     await this.sampleProductService.remove(id);
-    return { message: 'Sample product deactivated successfully' };
+    return { message: 'Sample product soft deleted successfully' };
   }
 
   /**
-   * Hard delete a sample product (permanent deletion)
+   * Restore a soft deleted sample product
    */
-  @Delete(':id/hard')
-  @SampleProductSwagger.HardDelete()
-  @CheckPermissions({ action: Action.DELETE, subject: SampleProduct })
-  async hardDelete(@Param('id') id: string) {
-    await this.sampleProductService.hardDelete(id);
-    return { message: 'Sample product deleted permanently' };
+  @Put(':id/restore')
+  @SampleProductSwagger.Restore()
+  @CheckPermissions({ action: Action.UPDATE, subject: SampleProduct })
+  async restore(@Param('id') id: string) {
+    await this.sampleProductService.restore(id);
+    return { message: 'Sample product restored successfully' };
   }
 }

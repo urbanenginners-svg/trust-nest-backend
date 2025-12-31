@@ -28,20 +28,27 @@ export class UserService {
 
   /**
    * Get all users
+   * @param includeDeleted - Whether to include soft-deleted users
    * @returns Array of users
    */
-  async findAll(): Promise<User[]> {
-    return await this.userRepository.find();
+  async findAll(includeDeleted: boolean = false): Promise<User[]> {
+    return await this.userRepository.find({
+      withDeleted: includeDeleted,
+    });
   }
 
   /**
    * Find user by ID
    * @param id - User ID
+   * @param includeDeleted - Whether to include soft-deleted users
    * @returns User entity
    * @throws NotFoundException if user not found
    */
-  async findOne(id: string): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
+  async findOne(id: string, includeDeleted: boolean = false): Promise<User> {
+    const user = await this.userRepository.findOne({ 
+      where: { id },
+      withDeleted: includeDeleted,
+    });
 
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
@@ -75,13 +82,24 @@ export class UserService {
   }
 
   /**
-   * Delete a user
+   * Soft delete a user
    * @param id - User ID
    * @returns void
    * @throws NotFoundException if user not found
    */
   async remove(id: string): Promise<void> {
     const user = await this.findOne(id);
-    await this.userRepository.remove(user);
+    await this.userRepository.softDelete(id);
+  }
+
+  /**
+   * Restore a soft-deleted user
+   * @param id - User ID
+   * @returns void
+   * @throws NotFoundException if user not found
+   */
+  async restore(id: string): Promise<void> {
+    const user = await this.findOne(id, true);
+    await this.userRepository.restore(id);
   }
 }

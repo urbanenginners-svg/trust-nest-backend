@@ -32,16 +32,21 @@ export class PermissionService {
     return await this.permissionRepository.save(permission);
   }
 
-  async findAll(): Promise<Permission[]> {
+  async findAll(includeDeleted: boolean = false): Promise<Permission[]> {
     return await this.permissionRepository.find({
       order: { resource: 'ASC', action: 'ASC' },
+      withDeleted: includeDeleted,
     });
   }
 
-  async findOne(id: string): Promise<Permission> {
+  async findOne(
+    id: string,
+    includeDeleted: boolean = false,
+  ): Promise<Permission> {
     const permission = await this.permissionRepository.findOne({
       where: { id },
       relations: ['roles'],
+      withDeleted: includeDeleted,
     });
 
     if (!permission) {
@@ -76,7 +81,12 @@ export class PermissionService {
 
   async remove(id: string): Promise<void> {
     await this.findOne(id); // Ensures permission exists
-    await this.permissionRepository.delete(id);
+    await this.permissionRepository.softDelete(id);
+  }
+
+  async restore(id: string): Promise<void> {
+    await this.findOne(id, true); // Ensures permission exists (including deleted)
+    await this.permissionRepository.restore(id);
   }
 
   /**

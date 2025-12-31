@@ -10,6 +10,7 @@ import {
   HttpStatus,
   UseGuards,
   Query,
+  Put,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import {
@@ -61,11 +62,14 @@ export class PermissionController {
   @Get()
   @CheckPermissions({ action: Action.READ, subject: Permission })
   @FindAllPermissionsSwagger()
-  async findAll(@Query('resource') resource?: string) {
+  async findAll(
+    @Query('resource') resource?: string,
+    @Query('includeDeleted') includeDeleted?: boolean
+  ) {
     if (resource) {
       return await this.permissionService.findByResource(resource);
     }
-    return await this.permissionService.findAll();
+    return await this.permissionService.findAll(includeDeleted);
   }
 
   /**
@@ -96,7 +100,7 @@ export class PermissionController {
   }
 
   /**
-   * Delete permission by ID
+   * Soft delete permission by ID
    * DELETE /permissions/:id
    * Requires: delete permissions permission
    */
@@ -106,5 +110,18 @@ export class PermissionController {
   @RemovePermissionSwagger()
   async remove(@Param('id') id: string) {
     await this.permissionService.remove(id);
+  }
+
+  /**
+   * Restore soft-deleted permission by ID
+   * PUT /permissions/:id/restore
+   * Requires: update permissions permission
+   */
+  @Put(':id/restore')
+  @HttpCode(HttpStatus.OK)
+  @CheckPermissions({ action: Action.UPDATE, subject: Permission })
+  async restore(@Param('id') id: string) {
+    await this.permissionService.restore(id);
+    return { message: 'Permission restored successfully' };
   }
 }

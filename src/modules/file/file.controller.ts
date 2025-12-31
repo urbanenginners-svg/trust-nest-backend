@@ -14,6 +14,7 @@ import {
   Query,
   Res,
   BadRequestException,
+  Put,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
@@ -116,11 +117,14 @@ export class FileController {
   @CheckPermissions({ action: Action.READ, subject: File })
   @FindAllFilesSwagger()
   @SerializeResponse('admin', 'user')
-  async findAll(@Query('moduleName') moduleName?: FileModuleName) {
+  async findAll(
+    @Query('moduleName') moduleName?: FileModuleName,
+    @Query('includeDeleted') includeDeleted?: boolean
+  ) {
     if (moduleName) {
-      return await this.fileService.findByModule(moduleName);
+      return await this.fileService.findByModule(moduleName, includeDeleted);
     }
-    return await this.fileService.findAll();
+    return await this.fileService.findAll(includeDeleted);
   }
 
   /**
@@ -131,8 +135,11 @@ export class FileController {
   @CheckPermissions({ action: Action.READ, subject: File })
   @FindAllFilesSwagger()
   @SerializeResponse('admin', 'user')
-  async getMyFiles(@CurrentUser() user: User) {
-    return await this.fileService.findByUploader(user.id);
+  async getMyFiles(
+    @CurrentUser() user: User,
+    @Query('includeDeleted') includeDeleted?: boolean
+  ) {
+    return await this.fileService.findByUploader(user.id, includeDeleted);
   }
 
   /**
@@ -169,6 +176,18 @@ export class FileController {
   @RemoveFileSwagger()
   async remove(@Param('id') id: string) {
     return await this.fileService.remove(id);
+  }
+
+  /**
+   * Restore soft-deleted file by ID
+   * PUT /files/:id/restore
+   */
+  @Put(':id/restore')
+  @HttpCode(HttpStatus.OK)
+  @CheckPermissions({ action: Action.UPDATE, subject: File })
+  async restore(@Param('id') id: string) {
+    await this.fileService.restore(id);
+    return { message: 'File restored successfully' };
   }
 
   /**

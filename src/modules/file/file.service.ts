@@ -77,45 +77,48 @@ export class FileService {
   }
 
   /**
-   * Get all files (excluding soft deleted)
+   * Get all files
    */
-  async findAll(): Promise<File[]> {
+  async findAll(includeDeleted: boolean = false): Promise<File[]> {
     return await this.fileRepository.find({
-      where: { isDeleted: false },
       relations: ['uploader'],
       order: { uploadDate: 'DESC' },
+      withDeleted: includeDeleted,
     });
   }
 
   /**
    * Get files by module
    */
-  async findByModule(moduleName: FileModuleName): Promise<File[]> {
+  async findByModule(moduleName: FileModuleName, includeDeleted: boolean = false): Promise<File[]> {
     return await this.fileRepository.find({
-      where: { moduleName, isDeleted: false },
+      where: { moduleName },
       relations: ['uploader'],
       order: { uploadDate: 'DESC' },
+      withDeleted: includeDeleted,
     });
   }
 
   /**
    * Get files by uploader
    */
-  async findByUploader(uploaderId: string): Promise<File[]> {
+  async findByUploader(uploaderId: string, includeDeleted: boolean = false): Promise<File[]> {
     return await this.fileRepository.find({
-      where: { uploaderId, isDeleted: false },
+      where: { uploaderId },
       relations: ['uploader'],
       order: { uploadDate: 'DESC' },
+      withDeleted: includeDeleted,
     });
   }
 
   /**
    * Get file by ID
    */
-  async findOne(id: string): Promise<File> {
+  async findOne(id: string, includeDeleted: boolean = false): Promise<File> {
     const file = await this.fileRepository.findOne({
-      where: { id, isDeleted: false },
+      where: { id },
       relations: ['uploader'],
+      withDeleted: includeDeleted,
     });
 
     if (!file) {
@@ -139,15 +142,22 @@ export class FileService {
    */
   async remove(id: string): Promise<void> {
     const file = await this.findOne(id);
-    file.isDeleted = true;
-    await this.fileRepository.save(file);
+    await this.fileRepository.softDelete(id);
+  }
+
+  /**
+   * Restore soft-deleted file
+   */
+  async restore(id: string): Promise<void> {
+    const file = await this.findOne(id, true);
+    await this.fileRepository.restore(id);
   }
 
   /**
    * Hard delete file (removes from database and disk)
    */
   async hardDelete(id: string): Promise<void> {
-    const file = await this.findOne(id);
+    const file = await this.findOne(id, true); // Include soft-deleted files
 
     // Delete physical file
     const fullPath = path.join(process.cwd(), file.filePath);
@@ -155,7 +165,7 @@ export class FileService {
       fs.unlinkSync(fullPath);
     }
 
-    // Delete from database
+    // Delete from database permanently
     await this.fileRepository.delete(id);
   }
 

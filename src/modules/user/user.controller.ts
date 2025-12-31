@@ -9,6 +9,8 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Query,
+  Put,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import {
@@ -63,8 +65,8 @@ export class UserController {
   @CheckPermissions({ action: Action.READ, subject: User })
   @FindAllUsersSwagger()
   @SerializeResponse('admin', 'user')
-  async findAll() {
-    return await this.userService.findAll();
+  async findAll(@Query('includeDeleted') includeDeleted?: boolean) {
+    return await this.userService.findAll(includeDeleted);
   }
 
   /**
@@ -92,7 +94,7 @@ export class UserController {
   }
 
   /**
-   * Delete user by ID
+   * Soft delete user by ID
    * DELETE /users/:id
    */
   @Delete(':id')
@@ -101,5 +103,17 @@ export class UserController {
   @RemoveUserSwagger()
   async remove(@Param('id') id: string) {
     await this.userService.remove(id);
+  }
+
+  /**
+   * Restore soft-deleted user by ID
+   * PUT /users/:id/restore
+   */
+  @Put(':id/restore')
+  @HttpCode(HttpStatus.OK)
+  @CheckPermissions({ action: Action.UPDATE, subject: User })
+  async restore(@Param('id') id: string) {
+    await this.userService.restore(id);
+    return { message: 'User restored successfully' };
   }
 }

@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
   ManyToMany,
   JoinTable,
 } from 'typeorm';
@@ -48,6 +49,11 @@ export class Role {
   @ApiProperty({ description: 'When the role was last updated' })
   @Expose({ groups: ['admin'] })
   updatedAt: Date;
+
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  @ApiProperty({ description: 'When the role was soft deleted', required: false })
+  @Expose({ groups: ['admin'] })
+  deletedAt?: Date;
 
   // Many-to-many relationship with Users
   @ManyToMany(() => User, (user) => user.roles)

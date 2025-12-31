@@ -75,6 +75,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 
 @Entity('table_name')
@@ -90,6 +91,9 @@ export class ModuleName {
 
   @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }
 ```
 
@@ -133,6 +137,8 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Query,
+  Put,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { ModuleNameService } from './module-name.service';
@@ -156,8 +162,8 @@ export class ModuleNameController {
   @Get()
   @ApiOperation({ summary: 'Get all items' })
   @ApiResponse({ status: 200, description: 'List of all items' })
-  async findAll() {
-    return await this.moduleNameService.findAll();
+  async findAll(@Query('includeDeleted') includeDeleted?: boolean) {
+    return await this.moduleNameService.findAll(includeDeleted);
   }
 
   @Get(':id')
@@ -183,12 +189,23 @@ export class ModuleNameController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete an item by ID' })
+  @ApiOperation({ summary: 'Soft delete an item by ID' })
   @ApiParam({ name: 'id', description: 'Item UUID' })
-  @ApiResponse({ status: 204, description: 'Item successfully deleted' })
+  @ApiResponse({ status: 204, description: 'Item successfully soft deleted' })
   @ApiResponse({ status: 404, description: 'Item not found' })
   async remove(@Param('id') id: string) {
     await this.moduleNameService.remove(id);
+  }
+
+  @Put(':id/restore')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Restore a soft-deleted item by ID' })
+  @ApiParam({ name: 'id', description: 'Item UUID' })
+  @ApiResponse({ status: 200, description: 'Item successfully restored' })
+  @ApiResponse({ status: 404, description: 'Item not found or not deleted' })
+  async restore(@Param('id') id: string) {
+    await this.moduleNameService.restore(id);
+    return { message: 'Item restored successfully' };
   }
 }
 ```
@@ -216,12 +233,17 @@ export class ModuleNameService {
     return await this.repository.save(entity);
   }
 
-  async findAll(): Promise<ModuleName[]> {
-    return await this.repository.find();
+  async findAll(includeDeleted: boolean = false): Promise<ModuleName[]> {
+    return await this.repository.find({
+      withDeleted: includeDeleted,
+    });
   }
 
-  async findOne(id: string): Promise<ModuleName> {
-    const entity = await this.repository.findOne({ where: { id } });
+  async findOne(id: string, includeDeleted: boolean = false): Promise<ModuleName> {
+    const entity = await this.repository.findOne({ 
+      where: { id },
+      withDeleted: includeDeleted,
+    });
     if (!entity) {
       throw new NotFoundException(`Item with ID ${id} not found`);
     }
@@ -239,7 +261,12 @@ export class ModuleNameService {
 
   async remove(id: string): Promise<void> {
     await this.findOne(id); // Ensures entity exists
-    await this.repository.delete(id);
+    await this.repository.softDelete(id);
+  }
+
+  async restore(id: string): Promise<void> {
+    await this.findOne(id, true); // Ensures entity exists (including soft-deleted)
+    await this.repository.restore(id);
   }
 }
 ```
@@ -484,6 +511,329 @@ The system automatically determines user permissions and filters response fields
 - Always register new modules in `app.module.ts`
 - Export services if they need to be used by other modules
 - Import `TypeOrmModule.forFeature([Entity])` for database entities
+
+## Soft Delete Implementation Guidelines
+
+This project uses TypeORM's built-in soft delete functionality instead of hard deletes. **ALL new modules MUST implement soft delete patterns.**
+
+### 1. Entity Requirements
+
+**MANDATORY:** Every entity must include `@DeleteDateColumn()`:
+
+```typescript
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+} from 'typeorm';
+
+@Entity('table_name')
+export class ModuleName {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  name: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @DeleteDateColumn() // REQUIRED for soft delete
+  deletedAt?: Date;
+}
+```
+
+**Key Points:**
+- `deletedAt` should be optional (`?`) 
+- TypeORM automatically manages this field
+- No need to manually set the timestamp
+
+### 2. Service Implementation
+
+**MANDATORY Patterns:**
+
+```typescript
+@Injectable()
+export class ModuleNameService {
+  constructor(
+    @InjectRepository(ModuleName)
+    private readonly repository: Repository<ModuleName>,
+  ) {}
+
+  // findAll MUST support includeDeleted parameter
+  async findAll(includeDeleted: boolean = false): Promise<ModuleName[]> {
+    return await this.repository.find({
+      withDeleted: includeDeleted, // REQUIRED
+    });
+  }
+
+  // findOne MUST support includeDeleted parameter  
+  async findOne(id: string, includeDeleted: boolean = false): Promise<ModuleName> {
+    const entity = await this.repository.findOne({
+      where: { id },
+      withDeleted: includeDeleted, // REQUIRED
+    });
+    if (!entity) {
+      throw new NotFoundException(`Item with ID ${id} not found`);
+    }
+    return entity;
+  }
+
+  // remove MUST use softDelete, NOT delete
+  async remove(id: string): Promise<void> {
+    await this.findOne(id); // Validate existence
+    await this.repository.softDelete(id); // REQUIRED: Use softDelete
+  }
+
+  // restore method MUST be implemented
+  async restore(id: string): Promise<void> {
+    await this.findOne(id, true); // Include deleted to find soft-deleted items
+    await this.repository.restore(id); // REQUIRED: Restore functionality
+  }
+}
+```
+
+**Critical Rules:**
+- **NEVER** use `repository.delete()` - always use `repository.softDelete()`
+- **ALWAYS** add `withDeleted` option to find operations
+- **ALWAYS** implement a `restore()` method
+- Default behavior should exclude soft-deleted records (`includeDeleted = false`)
+
+### 3. Controller Implementation
+
+**MANDATORY Patterns:**
+
+```typescript
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Query,
+  Put, // REQUIRED for restore endpoints
+} from '@nestjs/common';
+
+@Controller('module-names')
+export class ModuleNameController {
+  constructor(private readonly moduleNameService: ModuleNameService) {}
+
+  // GET endpoints MUST support includeDeleted query parameter
+  @Get()
+  async findAll(@Query('includeDeleted') includeDeleted?: boolean) {
+    return await this.moduleNameService.findAll(includeDeleted);
+  }
+
+  // DELETE endpoints perform soft delete
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Soft delete an item by ID' }) // Update documentation
+  async remove(@Param('id') id: string) {
+    await this.moduleNameService.remove(id);
+  }
+
+  // MANDATORY: Restore endpoint for every module
+  @Put(':id/restore')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Restore a soft-deleted item by ID' })
+  async restore(@Param('id') id: string) {
+    await this.moduleNameService.restore(id);
+    return { message: 'Item restored successfully' };
+  }
+}
+```
+
+**Required Endpoints:**
+- `GET /items?includeDeleted=true` - Get all items including soft-deleted
+- `DELETE /items/:id` - Soft delete an item
+- `PUT /items/:id/restore` - Restore a soft-deleted item
+
+### 4. Swagger Documentation
+
+Update Swagger decorators to reflect soft delete functionality:
+
+```typescript
+// decorators/module-name.swagger.decorator.ts
+export function FindAllModuleNameSwagger() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Get all items',
+      description: 'Retrieves all items with optional filtering',
+    }),
+    ApiQuery({
+      name: 'includeDeleted',
+      required: false,
+      type: Boolean,
+      description: 'Whether to include soft-deleted items',
+      example: false,
+    }),
+    ApiResponse({ status: 200, description: 'List of all items', type: [ModuleName] }),
+  );
+}
+
+export function RemoveModuleNameSwagger() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Soft delete an item',
+      description: 'Soft deletes an item (sets deletedAt timestamp)',
+    }),
+    ApiResponse({ status: 204, description: 'Item soft deleted successfully' }),
+    ApiResponse({ status: 404, description: 'Item not found' }),
+  );
+}
+
+export function RestoreModuleNameSwagger() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Restore a soft-deleted item',
+      description: 'Restores a previously soft-deleted item',
+    }),
+    ApiResponse({ status: 200, description: 'Item restored successfully' }),
+    ApiResponse({ status: 404, description: 'Item not found or not deleted' }),
+  );
+}
+```
+
+### 5. Database Migration
+
+When adding soft delete to existing entities:
+
+```bash
+# Generate migration for deletedAt column
+npm run migration:generate src/database/migrations/AddSoftDeleteToModuleName
+
+# Example migration content:
+export class AddSoftDeleteToModuleName implements MigrationInterface {
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        // Check if column exists before adding
+        const columnExists = await queryRunner.hasColumn('table_name', 'deletedAt');
+        if (!columnExists) {
+            await queryRunner.query(`ALTER TABLE "table_name" ADD "deletedAt" TIMESTAMP`);
+        }
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE "table_name" DROP COLUMN "deletedAt"`);
+    }
+}
+```
+
+### 6. Relationship Handling
+
+When entities have relationships, ensure soft delete behavior is consistent:
+
+```typescript
+// Child entity with foreign key
+@Entity('comments')
+export class Comment {
+  @ManyToOne(() => Post, post => post.comments)
+  post: Post;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
+}
+
+// Service method for related data
+async findPostComments(postId: string, includeDeleted = false): Promise<Comment[]> {
+  return await this.commentRepository.find({
+    where: { post: { id: postId } },
+    withDeleted: includeDeleted, // Respect soft delete in relationships
+    relations: ['post'],
+  });
+}
+```
+
+### 7. Testing Soft Delete
+
+Test scenarios for every soft delete implementation:
+
+```typescript
+// Test cases to verify:
+describe('ModuleName Soft Delete', () => {
+  it('should soft delete item (not remove from database)', async () => {
+    // DELETE /items/:id should set deletedAt
+    // GET /items should not return the item
+    // GET /items?includeDeleted=true should return the item
+  });
+
+  it('should restore soft-deleted item', async () => {
+    // PUT /items/:id/restore should clear deletedAt
+    // GET /items should return the restored item
+  });
+
+  it('should handle includeDeleted parameter correctly', async () => {
+    // Test both includeDeleted=true and includeDeleted=false
+  });
+});
+```
+
+### 8. Common Anti-Patterns
+
+**❌ DON'T:**
+```typescript
+// Hard delete - FORBIDDEN
+await this.repository.delete(id);
+
+// Missing withDeleted option
+await this.repository.find(); // Will miss soft-deleted items when includeDeleted=true
+
+// No restore method
+// Every service MUST have restore functionality
+
+// Inline Swagger with hard delete references
+@ApiOperation({ summary: 'Delete item permanently' }) // Wrong - we use soft delete
+```
+
+**✅ DO:**
+```typescript
+// Soft delete - REQUIRED
+await this.repository.softDelete(id);
+
+// Always use withDeleted option
+await this.repository.find({ withDeleted: includeDeleted });
+
+// Always implement restore
+async restore(id: string): Promise<void> {
+  await this.findOne(id, true);
+  await this.repository.restore(id);
+}
+
+// Correct Swagger documentation
+@ApiOperation({ summary: 'Soft delete item' }) // Correct - reflects actual behavior
+```
+
+### 9. Performance Considerations
+
+- Soft-deleted records remain in database - consider periodic cleanup jobs for old data
+- Ensure database indexes include `deletedAt` column for optimal query performance
+- Use `withDeleted: false` (default) for better performance when soft-deleted data isn't needed
+
+### 10. Soft Delete Checklist
+
+Before marking a module complete, verify:
+
+- [ ] `@DeleteDateColumn()` added to entity
+- [ ] `findAll()` method supports `includeDeleted` parameter
+- [ ] `findOne()` method supports `includeDeleted` parameter  
+- [ ] `remove()` method uses `repository.softDelete()`
+- [ ] `restore()` method implemented using `repository.restore()`
+- [ ] Controller has `?includeDeleted` query parameter support
+- [ ] Controller has `PUT /:id/restore` endpoint
+- [ ] Swagger decorators updated for soft delete terminology
+- [ ] Migration created to add `deletedAt` column
+- [ ] All relationship queries respect `withDeleted` option
+
+**This soft delete pattern is MANDATORY for all new modules and should be retrofit to existing modules.**
 
 ## Migration Commands
 

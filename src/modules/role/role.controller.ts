@@ -9,6 +9,8 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Query,
+  Put,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { RoleService } from './role.service';
@@ -69,8 +71,8 @@ export class RoleController {
   @CheckPermissions({ action: Action.READ, subject: Role })
   @FindAllRolesSwagger()
   @SerializeResponse(SerializationGroups.ADMIN, SerializationGroups.USER)
-  async findAll() {
-    return await this.roleService.findAll();
+  async findAll(@Query('includeDeleted') includeDeleted?: boolean) {
+    return await this.roleService.findAll(includeDeleted);
   }
 
   /**
@@ -100,7 +102,7 @@ export class RoleController {
   }
 
   /**
-   * Delete role by ID
+   * Soft delete role by ID
    * DELETE /roles/:id
    * Requires: delete roles permission
    */
@@ -110,6 +112,19 @@ export class RoleController {
   @RemoveRoleSwagger()
   async remove(@Param('id') id: string) {
     await this.roleService.remove(id);
+  }
+
+  /**
+   * Restore soft-deleted role by ID
+   * PUT /roles/:id/restore
+   * Requires: update roles permission
+   */
+  @Put(':id/restore')
+  @HttpCode(HttpStatus.OK)
+  @CheckPermissions({ action: Action.UPDATE, subject: Role })
+  async restore(@Param('id') id: string) {
+    await this.roleService.restore(id);
+    return { message: 'Role restored successfully' };
   }
 
   /**

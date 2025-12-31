@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -63,4 +64,9 @@ export class SampleProduct {
   @ApiProperty({ description: 'When the sample product was last updated' })
   @Expose({ groups: [SerializationGroups.ADMIN] })
   updatedAt: Date;
+
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  @ApiProperty({ description: 'When the sample product was soft deleted', required: false })
+  @Expose({ groups: [SerializationGroups.ADMIN] })
+  deletedAt?: Date;
 }

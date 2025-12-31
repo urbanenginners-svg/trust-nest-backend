@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
   ManyToMany,
 } from 'typeorm';
 import { Exclude, Expose, Transform } from 'class-transformer';
@@ -56,6 +57,11 @@ export class Permission {
   @ApiProperty({ description: 'When the permission was last updated' })
   @Expose({ groups: [SerializationGroups.ADMIN] })
   updatedAt: Date;
+
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  @ApiProperty({ description: 'When the permission was soft deleted', required: false })
+  @Expose({ groups: [SerializationGroups.ADMIN] })
+  deletedAt?: Date;
 
   // Many-to-many relationship with Roles
   @ManyToMany(() => Role, (role) => role.permissions)

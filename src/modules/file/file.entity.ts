@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
@@ -93,4 +94,9 @@ export class File {
   @ApiProperty({ description: 'When the file was last updated' })
   @Expose({ groups: [SerializationGroups.ADMIN] })
   updatedAt: Date;
+
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  @ApiProperty({ description: 'When the file was soft deleted', required: false })
+  @Expose({ groups: [SerializationGroups.ADMIN] })
+  deletedAt?: Date;
 }
