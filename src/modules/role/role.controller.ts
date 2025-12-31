@@ -18,7 +18,10 @@ import { AssignPermissionsDto } from './dto/assign-permissions.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { CheckPermissions } from '../../common/decorators/check-permissions.decorator';
-import { SerializeResponse, SerializationGroups } from '../../common/decorators/serialize-response.decorator';
+import {
+  SerializeResponse,
+  SerializationGroups,
+} from '../../common/decorators/serialize-response.decorator';
 import { Action } from '../../common/casl/ability.factory';
 import { Role } from './role.entity';
 import {

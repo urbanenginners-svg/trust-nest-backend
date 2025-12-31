@@ -1,9 +1,10 @@
-/**
- * SerializationGroups Enum Usage Examples
- * 
- * This file demonstrates how to use the new SerializationGroups enum
- * for consistent and type-safe field visibility control.
- */
+/\*\*
+
+- SerializationGroups Enum Usage Examples
+-
+- This file demonstrates how to use the new SerializationGroups enum
+- for consistent and type-safe field visibility control.
+  \*/
 
 import { SerializationGroups } from '../src/common/decorators/serialize-response.decorator';
 
@@ -23,19 +24,20 @@ import { SerializationGroups } from '../src/common/decorators/serialize-response
 
 // ===== ENUM DEFINITION =====
 export enum SerializationGroupsDemo {
-  ADMIN = 'admin',    // Full access to all fields including sensitive data
-  USER = 'user',      // Standard user access (public + user fields)
-  PUBLIC = 'public',  // Public access only (minimal fields)
+ADMIN = 'admin', // Full access to all fields including sensitive data
+USER = 'user', // Standard user access (public + user fields)
+PUBLIC = 'public', // Public access only (minimal fields)
 }
 
 // ===== BENEFITS =====
-/**
- * 1. TYPE SAFETY: IntelliSense and compile-time checking
- * 2. MAINTAINABILITY: Single source of truth for group names
- * 3. REFACTORING: Easy to rename or add new groups
- * 4. CONSISTENCY: Prevents typos in string literals
- * 5. DOCUMENTATION: Clear enum values with descriptions
- */
+/\*\*
+
+- 1.  TYPE SAFETY: IntelliSense and compile-time checking
+- 2.  MAINTAINABILITY: Single source of truth for group names
+- 3.  REFACTORING: Easy to rename or add new groups
+- 4.  CONSISTENCY: Prevents typos in string literals
+- 5.  DOCUMENTATION: Clear enum values with descriptions
+      \*/
 
 // ===== USAGE PATTERNS =====
 

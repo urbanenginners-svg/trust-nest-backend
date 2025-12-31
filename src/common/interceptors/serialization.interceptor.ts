@@ -56,10 +56,14 @@ export class SerializationInterceptor implements NestInterceptor {
         // Filter groups based on user context
         let activeGroups = groups;
         if (userContext === SerializationGroups.PUBLIC) {
-          activeGroups = groups.filter((group) => group === SerializationGroups.PUBLIC);
+          activeGroups = groups.filter(
+            (group) => group === SerializationGroups.PUBLIC,
+          );
         } else if (userContext === SerializationGroups.USER) {
           activeGroups = groups.filter(
-            (group) => group === SerializationGroups.PUBLIC || group === SerializationGroups.USER,
+            (group) =>
+              group === SerializationGroups.PUBLIC ||
+              group === SerializationGroups.USER,
           );
         }
         // For admin, use all groups

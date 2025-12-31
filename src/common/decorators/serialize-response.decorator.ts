@@ -23,7 +23,11 @@ export enum SerializationGroups {
 /**
  * Type alias for backwards compatibility
  */
-export type SerializationGroupsType = SerializationGroups | 'admin' | 'user' | 'public';
+export type SerializationGroupsType =
+  | SerializationGroups
+  | 'admin'
+  | 'user'
+  | 'public';
 
 /**
  * Decorator to set serialization groups based on user context
