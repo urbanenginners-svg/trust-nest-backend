@@ -64,7 +64,7 @@ export class PermissionController {
   @FindAllPermissionsSwagger()
   async findAll(
     @Query('resource') resource?: string,
-    @Query('includeDeleted') includeDeleted?: boolean
+    @Query('includeDeleted') includeDeleted?: boolean,
   ) {
     if (resource) {
       return await this.permissionService.findByResource(resource);

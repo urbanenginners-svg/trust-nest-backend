@@ -59,7 +59,10 @@ export class Permission {
   updatedAt: Date;
 
   @DeleteDateColumn({ type: 'timestamp', nullable: true })
-  @ApiProperty({ description: 'When the permission was soft deleted', required: false })
+  @ApiProperty({
+    description: 'When the permission was soft deleted',
+    required: false,
+  })
   @Expose({ groups: [SerializationGroups.ADMIN] })
   deletedAt?: Date;
 

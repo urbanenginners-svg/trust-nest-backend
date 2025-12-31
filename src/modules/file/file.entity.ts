@@ -96,7 +96,10 @@ export class File {
   updatedAt: Date;
 
   @DeleteDateColumn({ type: 'timestamp', nullable: true })
-  @ApiProperty({ description: 'When the file was soft deleted', required: false })
+  @ApiProperty({
+    description: 'When the file was soft deleted',
+    required: false,
+  })
   @Expose({ groups: [SerializationGroups.ADMIN] })
   deletedAt?: Date;
 }

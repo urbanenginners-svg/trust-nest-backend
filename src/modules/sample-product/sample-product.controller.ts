@@ -59,7 +59,10 @@ export class SampleProductController {
   ) {
     const includeInactiveFlag = includeInactive === 'true';
     const includeDeletedFlag = includeDeleted === 'true';
-    return await this.sampleProductService.findAll(includeInactiveFlag, includeDeletedFlag);
+    return await this.sampleProductService.findAll(
+      includeInactiveFlag,
+      includeDeletedFlag,
+    );
   }
 
   /**

@@ -119,7 +119,7 @@ export class FileController {
   @SerializeResponse('admin', 'user')
   async findAll(
     @Query('moduleName') moduleName?: FileModuleName,
-    @Query('includeDeleted') includeDeleted?: boolean
+    @Query('includeDeleted') includeDeleted?: boolean,
   ) {
     if (moduleName) {
       return await this.fileService.findByModule(moduleName, includeDeleted);
@@ -137,7 +137,7 @@ export class FileController {
   @SerializeResponse('admin', 'user')
   async getMyFiles(
     @CurrentUser() user: User,
-    @Query('includeDeleted') includeDeleted?: boolean
+    @Query('includeDeleted') includeDeleted?: boolean,
   ) {
     return await this.fileService.findByUploader(user.id, includeDeleted);
   }

@@ -66,7 +66,10 @@ export class SampleProductService {
    * @param includeDeleted - Whether to include soft-deleted products
    * @returns Array of sample products
    */
-  async findAll(includeInactive: boolean = false, includeDeleted: boolean = false): Promise<SampleProduct[]> {
+  async findAll(
+    includeInactive: boolean = false,
+    includeDeleted: boolean = false,
+  ): Promise<SampleProduct[]> {
     const queryBuilder =
       this.sampleProductRepository.createQueryBuilder('product');
 
@@ -87,7 +90,10 @@ export class SampleProductService {
    * @param includeDeleted - Whether to include soft-deleted products
    * @returns Sample product
    */
-  async findOne(id: string, includeDeleted: boolean = false): Promise<SampleProduct> {
+  async findOne(
+    id: string,
+    includeDeleted: boolean = false,
+  ): Promise<SampleProduct> {
     const options: any = { where: { id } };
     if (includeDeleted) {
       options.withDeleted = true;
@@ -172,7 +178,9 @@ export class SampleProductService {
     const result = await this.sampleProductRepository.restore(id);
 
     if (result.affected === 0) {
-      throw new NotFoundException(`Sample product with ID "${id}" not found or not deleted`);
+      throw new NotFoundException(
+        `Sample product with ID "${id}" not found or not deleted`,
+      );
     }
   }
 }

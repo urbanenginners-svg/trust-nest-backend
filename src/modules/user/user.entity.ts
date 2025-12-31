@@ -55,7 +55,10 @@ export class User {
   updatedAt: Date;
 
   @DeleteDateColumn({ type: 'timestamp', nullable: true })
-  @ApiProperty({ description: 'When the user was soft deleted', required: false })
+  @ApiProperty({
+    description: 'When the user was soft deleted',
+    required: false,
+  })
   @Expose({ groups: ['admin'] })
   deletedAt?: Date;
 

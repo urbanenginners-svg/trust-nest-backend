@@ -90,7 +90,10 @@ export class FileService {
   /**
    * Get files by module
    */
-  async findByModule(moduleName: FileModuleName, includeDeleted: boolean = false): Promise<File[]> {
+  async findByModule(
+    moduleName: FileModuleName,
+    includeDeleted: boolean = false,
+  ): Promise<File[]> {
     return await this.fileRepository.find({
       where: { moduleName },
       relations: ['uploader'],
@@ -102,7 +105,10 @@ export class FileService {
   /**
    * Get files by uploader
    */
-  async findByUploader(uploaderId: string, includeDeleted: boolean = false): Promise<File[]> {
+  async findByUploader(
+    uploaderId: string,
+    includeDeleted: boolean = false,
+  ): Promise<File[]> {
     return await this.fileRepository.find({
       where: { uploaderId },
       relations: ['uploader'],

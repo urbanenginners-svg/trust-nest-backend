@@ -51,7 +51,10 @@ export class Role {
   updatedAt: Date;
 
   @DeleteDateColumn({ type: 'timestamp', nullable: true })
-  @ApiProperty({ description: 'When the role was soft deleted', required: false })
+  @ApiProperty({
+    description: 'When the role was soft deleted',
+    required: false,
+  })
   @Expose({ groups: ['admin'] })
   deletedAt?: Date;
 

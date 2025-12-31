@@ -239,8 +239,11 @@ export class ModuleNameService {
     });
   }
 
-  async findOne(id: string, includeDeleted: boolean = false): Promise<ModuleName> {
-    const entity = await this.repository.findOne({ 
+  async findOne(
+    id: string,
+    includeDeleted: boolean = false,
+  ): Promise<ModuleName> {
+    const entity = await this.repository.findOne({
       where: { id },
       withDeleted: includeDeleted,
     });
@@ -550,7 +553,8 @@ export class ModuleName {
 ```
 
 **Key Points:**
-- `deletedAt` should be optional (`?`) 
+
+- `deletedAt` should be optional (`?`)
 - TypeORM automatically manages this field
 - No need to manually set the timestamp
 
@@ -573,8 +577,11 @@ export class ModuleNameService {
     });
   }
 
-  // findOne MUST support includeDeleted parameter  
-  async findOne(id: string, includeDeleted: boolean = false): Promise<ModuleName> {
+  // findOne MUST support includeDeleted parameter
+  async findOne(
+    id: string,
+    includeDeleted: boolean = false,
+  ): Promise<ModuleName> {
     const entity = await this.repository.findOne({
       where: { id },
       withDeleted: includeDeleted, // REQUIRED
@@ -600,6 +607,7 @@ export class ModuleNameService {
 ```
 
 **Critical Rules:**
+
 - **NEVER** use `repository.delete()` - always use `repository.softDelete()`
 - **ALWAYS** add `withDeleted` option to find operations
 - **ALWAYS** implement a `restore()` method
@@ -654,6 +662,7 @@ export class ModuleNameController {
 ```
 
 **Required Endpoints:**
+
 - `GET /items?includeDeleted=true` - Get all items including soft-deleted
 - `DELETE /items/:id` - Soft delete an item
 - `PUT /items/:id/restore` - Restore a soft-deleted item
@@ -677,7 +686,11 @@ export function FindAllModuleNameSwagger() {
       description: 'Whether to include soft-deleted items',
       example: false,
     }),
-    ApiResponse({ status: 200, description: 'List of all items', type: [ModuleName] }),
+    ApiResponse({
+      status: 200,
+      description: 'List of all items',
+      type: [ModuleName],
+    }),
   );
 }
 
@@ -780,6 +793,7 @@ describe('ModuleName Soft Delete', () => {
 ### 8. Common Anti-Patterns
 
 **❌ DON'T:**
+
 ```typescript
 // Hard delete - FORBIDDEN
 await this.repository.delete(id);
@@ -795,6 +809,7 @@ await this.repository.find(); // Will miss soft-deleted items when includeDelete
 ```
 
 **✅ DO:**
+
 ```typescript
 // Soft delete - REQUIRED
 await this.repository.softDelete(id);
@@ -824,7 +839,7 @@ Before marking a module complete, verify:
 
 - [ ] `@DeleteDateColumn()` added to entity
 - [ ] `findAll()` method supports `includeDeleted` parameter
-- [ ] `findOne()` method supports `includeDeleted` parameter  
+- [ ] `findOne()` method supports `includeDeleted` parameter
 - [ ] `remove()` method uses `repository.softDelete()`
 - [ ] `restore()` method implemented using `repository.restore()`
 - [ ] Controller has `?includeDeleted` query parameter support

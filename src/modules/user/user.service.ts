@@ -45,7 +45,7 @@ export class UserService {
    * @throws NotFoundException if user not found
    */
   async findOne(id: string, includeDeleted: boolean = false): Promise<User> {
-    const user = await this.userRepository.findOne({ 
+    const user = await this.userRepository.findOne({
       where: { id },
       withDeleted: includeDeleted,
     });
