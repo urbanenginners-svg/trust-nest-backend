@@ -6,6 +6,13 @@ import { AppService } from './app.service';
 import { validate } from './config/env.validation';
 import { getDatabaseConfig } from './config/database.config';
 import { UserModule } from './modules/user/user.module';
+import { RoleModule } from './modules/role/role.module';
+import { PermissionModule } from './modules/permission/permission.module';
+import { AuthModule } from './auth/auth.module';
+import { SeedService } from './database/seed.service';
+import { User } from './modules/user/user.entity';
+import { Role } from './modules/role/role.entity';
+import { Permission } from './modules/permission/permission.entity';
 
 /**
  * Root Application Module
@@ -28,10 +35,16 @@ import { UserModule } from './modules/user/user.module';
       useFactory: getDatabaseConfig,
     }),
 
+    // TypeORM entities for SeedService
+    TypeOrmModule.forFeature([User, Role, Permission]),
+
     // Feature Modules
     UserModule,
+    RoleModule,
+    PermissionModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SeedService],
 })
 export class AppModule {}

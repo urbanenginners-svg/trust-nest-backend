@@ -1,0 +1,164 @@
+# JWT Authentication API Tests
+# Use with REST Client extension in VS Code
+
+@baseUrl = http://localhost:3000/api/v1
+@contentType = application/json
+
+###############################################
+# Authentication Endpoints
+###############################################
+
+### Get SuperAdmin Credentials (for testing)
+GET {{baseUrl}}/auth/superadmin
+
+### Login as SuperAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "superadmin@example.com",
+  "password": "SuperAdmin123!"
+}
+
+### Get Profile (replace YOUR_JWT_TOKEN with access_token from login response)
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer YOUR_JWT_TOKEN
+
+###############################################
+# Protected User Endpoints
+###############################################
+
+### Get All Users (requires authentication and read permission)
+GET {{baseUrl}}/users
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Create New User (requires create permission)
+POST {{baseUrl}}/users
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: {{contentType}}
+
+{
+  "name": "Test User",
+  "email": "test@example.com", 
+  "password": "password123"
+}
+
+### Get User by ID (replace USER_ID)
+GET {{baseUrl}}/users/USER_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Update User (replace USER_ID)
+PATCH {{baseUrl}}/users/USER_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: {{contentType}}
+
+{
+  "name": "Updated User Name"
+}
+
+### Delete User (replace USER_ID)
+DELETE {{baseUrl}}/users/USER_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+###############################################
+# Role Management Endpoints
+###############################################
+
+### Get All Roles
+GET {{baseUrl}}/roles
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Create New Role
+POST {{baseUrl}}/roles
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: {{contentType}}
+
+{
+  "name": "moderator",
+  "description": "Moderator role with limited permissions"
+}
+
+### Get Role by ID (replace ROLE_ID)
+GET {{baseUrl}}/roles/ROLE_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Update Role (replace ROLE_ID)
+PATCH {{baseUrl}}/roles/ROLE_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: {{contentType}}
+
+{
+  "description": "Updated moderator role description"
+}
+
+### Assign Permissions to Role (replace ROLE_ID and PERMISSION_IDs)
+POST {{baseUrl}}/roles/ROLE_ID/permissions
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: {{contentType}}
+
+{
+  "permissionIds": ["PERMISSION_ID_1", "PERMISSION_ID_2"]
+}
+
+###############################################
+# Permission Management Endpoints
+###############################################
+
+### Get All Permissions
+GET {{baseUrl}}/permissions
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Create New Permission
+POST {{baseUrl}}/permissions
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: {{contentType}}
+
+{
+  "name": "posts.read",
+  "resource": "post",
+  "action": "read", 
+  "description": "Read posts permission"
+}
+
+### Get Permission by ID (replace PERMISSION_ID)
+GET {{baseUrl}}/permissions/PERMISSION_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Update Permission (replace PERMISSION_ID)
+PATCH {{baseUrl}}/permissions/PERMISSION_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: {{contentType}}
+
+{
+  "description": "Updated permission description"
+}
+
+### Delete Permission (replace PERMISSION_ID)
+DELETE {{baseUrl}}/permissions/PERMISSION_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+###############################################
+# Usage Instructions
+###############################################
+
+# 1. Start the application: npm run start:dev
+# 2. Run "Get SuperAdmin Credentials" to see login info
+# 3. Run "Login as SuperAdmin" and copy the access_token
+# 4. Replace "YOUR_JWT_TOKEN" with the actual token in all requests
+# 5. Test the protected endpoints with proper JWT authentication
+
+###############################################
+# Expected Flow
+###############################################
+
+# Superadmin can:
+# - Manage all users, roles, and permissions (full CRUD)
+# - Create new roles and assign permissions
+# - Access all system resources
+
+# Admin can:
+# - Read/create/update users (no delete)
+# - Read roles
+
+# Regular users can:
+# - Read their own profile and basic role information

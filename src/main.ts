@@ -50,11 +50,38 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('NestJS PostgreSQL API')
     .setDescription(
-      'REST API documentation for the NestJS PostgreSQL application',
+      `REST API documentation for the NestJS PostgreSQL application with JWT Authentication and RBAC.
+      
+      ## Authentication
+      1. Login via POST /auth/login with email and password
+      2. Copy the access_token from the response
+      3. Click the "Authorize" button below
+      4. Enter the token in the format: your_jwt_token_here
+      5. All protected endpoints will use this token automatically
+      
+      ## Test Credentials
+      - Email: superadmin@example.com
+      - Password: SuperAdmin123!`,
     )
     .setVersion('1.0')
-    .addTag('users', 'User management endpoints')
-    .addBearerAuth()
+    .addTag('auth', 'Authentication endpoints')
+    .addTag('users', 'User management endpoints (requires authentication)')
+    .addTag('roles', 'Role management endpoints (requires authentication)')
+    .addTag(
+      'permissions',
+      'Permission management endpoints (requires authentication)',
+    )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        description: 'Enter JWT token (Bearer will be added automatically)',
+        in: 'header',
+      },
+      'defaultBearerAuth',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

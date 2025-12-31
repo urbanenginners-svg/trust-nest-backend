@@ -5,27 +5,29 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
-  JoinTable,
 } from 'typeorm';
 import { Role } from '../role/role.entity';
 
 /**
- * User Entity
- * Represents a user in the system with authentication and profile information
+ * Permission Entity
+ * Represents system permissions that can be assigned to roles
  */
-@Entity('users')
-export class User {
+@Entity('permissions')
+export class Permission {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 100, unique: true })
   name: string;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
-  email: string;
+  @Column({ type: 'varchar', length: 100 })
+  resource: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  password: string;
+  @Column({ type: 'varchar', length: 50 })
+  action: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  description: string;
 
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
@@ -37,11 +39,6 @@ export class User {
   updatedAt: Date;
 
   // Many-to-many relationship with Roles
-  @ManyToMany(() => Role, (role) => role.users)
-  @JoinTable({
-    name: 'user_roles',
-    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
-  })
+  @ManyToMany(() => Role, (role) => role.permissions)
   roles: Role[];
 }

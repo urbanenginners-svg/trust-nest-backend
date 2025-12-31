@@ -32,6 +32,9 @@ class EnvironmentVariables {
 
   @IsString()
   DB_NAME: string;
+
+  @IsString()
+  JWT_SECRET: string;
 }
 
 /**
