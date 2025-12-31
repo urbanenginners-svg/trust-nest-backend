@@ -179,6 +179,38 @@ export class SeedService implements OnApplicationBootstrap {
         action: 'manage',
         description: 'Full file management including hard deletion',
       },
+
+      // Sample Product permissions
+      {
+        name: 'sample-products.create',
+        resource: 'sample-product',
+        action: 'create',
+        description: 'Create new sample products',
+      },
+      {
+        name: 'sample-products.read',
+        resource: 'sample-product',
+        action: 'read',
+        description: 'View sample product information',
+      },
+      {
+        name: 'sample-products.update',
+        resource: 'sample-product',
+        action: 'update',
+        description: 'Update sample product information',
+      },
+      {
+        name: 'sample-products.delete',
+        resource: 'sample-product',
+        action: 'delete',
+        description: 'Delete sample products',
+      },
+      {
+        name: 'sample-products.manage',
+        resource: 'sample-product',
+        action: 'manage',
+        description: 'Full sample product management',
+      },
     ];
 
     for (const permissionData of permissions) {

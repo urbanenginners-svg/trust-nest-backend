@@ -10,6 +10,7 @@ import { User } from '../../modules/user/user.entity';
 import { Role } from '../../modules/role/role.entity';
 import { Permission } from '../../modules/permission/permission.entity';
 import { File } from '../../modules/file/file.entity';
+import { SampleProduct } from '../../modules/sample-product/sample-product.entity';
 
 // Define the actions that can be performed
 export enum Action {
@@ -22,7 +23,7 @@ export enum Action {
 
 // Define the subjects (resources) that actions can be performed on
 export type Subjects =
-  | InferSubjects<typeof User | typeof Role | typeof Permission | typeof File>
+  | InferSubjects<typeof User | typeof Role | typeof Permission | typeof File | typeof SampleProduct>
   | 'all';
 
 // Define the Ability type
@@ -126,6 +127,8 @@ export class AbilityFactory {
         return Permission;
       case 'file':
         return File;
+      case 'sample-product':
+        return SampleProduct;
       case 'all':
         return 'all';
       default:

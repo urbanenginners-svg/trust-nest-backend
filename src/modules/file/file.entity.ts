@@ -20,6 +20,7 @@ export enum FileModuleName {
   ROLE = 'role',
   PERMISSION = 'permission',
   FILE = 'file',
+  SAMPLE_PRODUCT = 'sample-product',
   GENERAL = 'general',
 }
 
