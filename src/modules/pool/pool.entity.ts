@@ -14,6 +14,7 @@ import { SerializationGroups } from '../../common/decorators/serialize-response.
 import { SampleProduct } from '../sample-product/sample-product.entity';
 import { File } from '../file/file.entity';
 import { User } from '../user/user.entity';
+import { PoolStatus } from './enums/pool-status.enum';
 
 /**
  * Pool Entity
@@ -59,13 +60,46 @@ export class Pool {
   @Expose({ groups: [SerializationGroups.ADMIN, SerializationGroups.USER] })
   description?: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({
+    type: 'enum',
+    enum: PoolStatus,
+    default: PoolStatus.CREATED,
+  })
   @ApiProperty({
-    description: 'Price of the pool item',
-    example: 99.99,
+    description: 'Current status of the pool',
+    enum: PoolStatus,
+    example: PoolStatus.CREATED,
+    default: PoolStatus.CREATED,
   })
   @Expose({ groups: [SerializationGroups.ADMIN, SerializationGroups.USER] })
-  poolPrice: number;
+  status: PoolStatus;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @ApiProperty({
+    description: 'Price of the pool item (set by admin during approval)',
+    example: 99.99,
+    required: false,
+  })
+  @Expose({ groups: [SerializationGroups.ADMIN, SerializationGroups.USER] })
+  poolPrice?: number;
+
+  @Column({ type: 'int', default: 0 })
+  @ApiProperty({
+    description: 'Total number of contributors to this pool',
+    example: 25,
+    default: 0,
+  })
+  @Expose({ groups: [SerializationGroups.ADMIN, SerializationGroups.USER] })
+  totalContributors: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @ApiProperty({
+    description: 'Total amount received from contributors',
+    example: 150.75,
+    default: 0,
+  })
+  @Expose({ groups: [SerializationGroups.ADMIN, SerializationGroups.USER] })
+  amountReceived: number;
 
   @Column({ type: 'boolean', default: true })
   @ApiProperty({

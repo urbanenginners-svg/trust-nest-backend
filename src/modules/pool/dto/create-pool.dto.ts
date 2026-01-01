@@ -71,13 +71,4 @@ export class CreatePoolDto {
   @IsOptional()
   @IsString()
   description?: string;
-
-  @ApiProperty({
-    description: 'Price of the pool item',
-    example: 99.99,
-  })
-  @IsNotEmpty()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @IsPositive()
-  poolPrice: number;
 }
