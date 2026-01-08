@@ -20,6 +20,8 @@ import { File } from './modules/file/file.entity';
 import { SampleProduct } from './modules/sample-product/sample-product.entity';
 import { Pool } from './modules/pool/pool.entity';
 import { PoolModule } from './modules/pool/pool.module';
+import { Donation } from './modules/donation/donation.entity';
+import { DonationModule } from './modules/donation/donation.module';
 import { SerializationInterceptor } from './common/interceptors/serialization.interceptor';
 
 /**
@@ -51,6 +53,7 @@ import { SerializationInterceptor } from './common/interceptors/serialization.in
       File,
       SampleProduct,
       Pool,
+      Donation,
     ]),
 
     // Feature Modules
@@ -60,6 +63,7 @@ import { SerializationInterceptor } from './common/interceptors/serialization.in
     FileModule,
     SampleProductModule,
     PoolModule,
+    DonationModule,
     AuthModule,
   ],
   controllers: [AppController],

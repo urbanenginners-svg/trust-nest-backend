@@ -83,14 +83,14 @@ export class Pool {
   @Expose({ groups: [SerializationGroups.ADMIN, SerializationGroups.USER] })
   poolPrice?: number;
 
-  @Column({ type: 'int', default: 0 })
-  @ApiProperty({
-    description: 'Total number of contributors to this pool',
-    example: 25,
-    default: 0,
-  })
-  @Expose({ groups: [SerializationGroups.ADMIN, SerializationGroups.USER] })
-  totalContributors: number;
+  // @Column({ type: 'int', default: 0 })
+  // @ApiProperty({
+  //   description: 'Total number of contributors to this pool',
+  //   example: 25,
+  //   default: 0,
+  // })
+  // @Expose({ groups: [SerializationGroups.ADMIN, SerializationGroups.USER] })
+  // totalContributors: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   @ApiProperty({

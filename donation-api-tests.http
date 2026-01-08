@@ -1,0 +1,94 @@
+### Donation API Tests
+### Base URL: http://localhost:3000/api
+### Make sure to set the Authorization token for authenticated requests
+
+@baseUrl = http://localhost:3000/api
+@authToken = YOUR_JWT_TOKEN_HERE
+@poolId = YOUR_POOL_ID_HERE
+@donationId = YOUR_DONATION_ID_HERE
+@orderId = YOUR_RAZORPAY_ORDER_ID_HERE
+
+### ============================================
+### 1. Create Donation Order (Anonymous User)
+### ============================================
+POST {{baseUrl}}/donations/create-order
+Content-Type: application/json
+
+{
+  "amount": 50.00,
+  "poolId": "{{poolId}}",
+  "message": "Hope this helps with the lab testing!",
+  "anonymousDonorName": "John Doe",
+  "anonymousDonorEmail": "john@example.com",
+  "anonymousDonorPhone": "+919876543210"
+}
+
+### ============================================
+### 2. Create Donation Order (Logged-in User)
+### ============================================
+POST {{baseUrl}}/donations/create-order
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "amount": 100.00,
+  "poolId": "{{poolId}}",
+  "message": "Supporting your cause!"
+}
+
+### ============================================
+### 3. Verify Payment (After Razorpay Payment)
+### ============================================
+POST {{baseUrl}}/donations/verify-payment
+Content-Type: application/json
+
+{
+  "razorpayOrderId": "{{orderId}}",
+  "razorpayPaymentId": "pay_abc123",
+  "razorpaySignature": "signature_here"
+}
+
+### ============================================
+### 4. Get All Donations (Admin)
+### ============================================
+GET {{baseUrl}}/donations
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### 5. Get Donations by Pool (Public)
+### ============================================
+GET {{baseUrl}}/donations/pool/{{poolId}}
+
+### ============================================
+### 6. Get Pool Donation Statistics (Public)
+### ============================================
+GET {{baseUrl}}/donations/pool/{{poolId}}/stats
+
+### ============================================
+### 7. Get My Donations (Authenticated User)
+### ============================================
+GET {{baseUrl}}/donations/user/my-donations
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### 8. Get Donation by ID (Public)
+### ============================================
+GET {{baseUrl}}/donations/{{donationId}}
+
+### ============================================
+### 9. Get Donations Filtered by Status
+### ============================================
+GET {{baseUrl}}/donations?status=Success
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### 10. Get Donations Filtered by Pool
+### ============================================
+GET {{baseUrl}}/donations?poolId={{poolId}}
+Authorization: Bearer {{authToken}}
+
+### ============================================
+### 11. Get Donations Filtered by User
+### ============================================
+GET {{baseUrl}}/donations?userId=USER_UUID_HERE
+Authorization: Bearer {{authToken}}
